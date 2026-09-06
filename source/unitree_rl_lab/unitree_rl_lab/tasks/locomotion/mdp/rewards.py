@@ -223,3 +223,36 @@ def joint_mirror(env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg, mirror_joint
         )
     reward *= 1 / len(mirror_joints) if len(mirror_joints) > 0 else 0
     return reward
+
+
+# def stuck_penalty(env, command_name: str, vel_threshold: float = 0.2, cmd_threshold: float = 0.1):
+#     """
+#     Penalty if robot has a command to move but is not moving.
+
+#     Args:
+#         env: IsaacLab env
+#         command_name: usually "base_velocity"
+#         vel_threshold: below this speed считаем "не движется"
+#         cmd_threshold: выше этого считаем "есть команда двигаться"
+#     """
+
+#     # команды (N, 3) -> x, y, yaw
+#     commands = env.command_manager.get_command(command_name)
+
+#     # реальная скорость (N, 3)
+#     base_lin_vel = env.scene["robot"].data.root_lin_vel_b  # или root_lin_vel_w
+
+#     # берём только xy
+#     cmd_speed = torch.norm(commands[:, :2], dim=1)
+#     real_speed = torch.norm(base_lin_vel[:, :2], dim=1)
+
+#     # маска: есть команда двигаться
+#     move_mask = cmd_speed > cmd_threshold
+
+#     # маска: не движется
+#     stuck_mask = real_speed < vel_threshold
+
+#     # penalty
+#     penalty = move_mask & stuck_mask
+
+#     return penalty.float()
