@@ -8,6 +8,7 @@ gym.register(
         "env_cfg_entry_point": f"{__name__}.velocity_env_cfg:RobotEnvCfg",
         "play_env_cfg_entry_point": f"{__name__}.velocity_env_cfg:RobotPlayEnvCfg",
         "rsl_rl_cfg_entry_point": f"unitree_rl_lab.tasks.locomotion.agents.rsl_rl_ppo_cfg:BasePPORunnerCfg",
-        "eval_stairs_10cm_env_cfg_entry_point": f"{__name__}.velocity_env_cfg:RobotStairsEvalEnvCfg",
+        # One entry point for all fixed evaluation scenarios; see eval_scenarios.py
+        "eval_env_cfg_entry_point": f"{__name__}.velocity_env_cfg:RobotEvalEnvCfg",
     },
 )

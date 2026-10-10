@@ -31,9 +31,10 @@ parser.add_argument(
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
 parser.add_argument(
-    "--eval_stairs_10cm",
-    action="store_true",
-    help="Evaluate a checkpoint on a fixed 10 cm pyramid staircase.",
+    "--eval_scenario",
+    type=str,
+    default=None,
+    help="Name of a fixed evaluation scenario from eval_scenarios.py (e.g. stairs_up_10cm).",
 )
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
@@ -66,17 +67,14 @@ from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper, expor
 from isaaclab_tasks.utils import get_checkpoint_path
 
 import unitree_rl_lab.tasks  # noqa: F401
+from unitree_rl_lab.tasks.locomotion.robots.go2.eval_scenarios import apply_eval_scenario
 from unitree_rl_lab.utils.parser_cfg import parse_env_cfg
 
 
 def main():
     """Play with RSL-RL agent."""
     # parse configuration
-    eval_entry_point = (
-        "eval_stairs_10cm_env_cfg_entry_point"
-        if args_cli.eval_stairs_10cm
-        else "play_env_cfg_entry_point"
-    )
+    eval_entry_point = "eval_env_cfg_entry_point" if args_cli.eval_scenario else "play_env_cfg_entry_point"
 
     env_cfg = parse_env_cfg(
         args_cli.task,
@@ -85,6 +83,9 @@ def main():
         use_fabric=not args_cli.disable_fabric,
         entry_point_key=eval_entry_point,
     )
+    if args_cli.eval_scenario:
+        sc = apply_eval_scenario(env_cfg, args_cli.eval_scenario)
+        print(f"[INFO] Eval scenario '{args_cli.eval_scenario}': {sc.description}")
     agent_cfg: RslRlOnPolicyRunnerCfg = cli_args.parse_rsl_rl_cfg(args_cli.task, args_cli)
 
     # specify directory for logging experiments
