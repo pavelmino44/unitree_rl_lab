@@ -30,6 +30,11 @@ parser.add_argument(
     help="Use the pre-trained checkpoint from Nucleus.",
 )
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real-time, if possible.")
+parser.add_argument(
+    "--eval_stairs_10cm",
+    action="store_true",
+    help="Evaluate a checkpoint on a fixed 10 cm pyramid staircase.",
+)
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
@@ -67,12 +72,18 @@ from unitree_rl_lab.utils.parser_cfg import parse_env_cfg
 def main():
     """Play with RSL-RL agent."""
     # parse configuration
+    eval_entry_point = (
+        "eval_stairs_10cm_env_cfg_entry_point"
+        if args_cli.eval_stairs_10cm
+        else "play_env_cfg_entry_point"
+    )
+
     env_cfg = parse_env_cfg(
         args_cli.task,
         device=args_cli.device,
         num_envs=args_cli.num_envs,
         use_fabric=not args_cli.disable_fabric,
-        entry_point_key="play_env_cfg_entry_point",
+        entry_point_key=eval_entry_point,
     )
     agent_cfg: RslRlOnPolicyRunnerCfg = cli_args.parse_rsl_rl_cfg(args_cli.task, args_cli)
 

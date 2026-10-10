@@ -427,3 +427,77 @@ class RobotPlayEnvCfg(RobotEnvCfg):
         self.scene.terrain.terrain_generator.num_rows = 2
         self.scene.terrain.terrain_generator.num_cols = 1
         self.commands.base_velocity.ranges = self.commands.base_velocity.limit_ranges
+
+@configclass
+class RobotStairsEvalEnvCfg(RobotPlayEnvCfg):
+    """Deterministic evaluation on a fixed pyramid staircase."""
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        # One robot, longer episode.
+        self.scene.num_envs = 1
+        self.episode_length_s = 30.0
+
+        # Fixed six-step pyramid staircase.
+        # With size=6.6 m and platform_width=3.0 m,
+        # the height-field construction produces six stair layers.
+        self.scene.terrain.terrain_generator = terrain_gen.TerrainGeneratorCfg(
+            size=(6.6, 6.6),
+            border_width=20.0,
+            num_rows=1,
+            num_cols=1,
+            horizontal_scale=0.1,
+            vertical_scale=0.005,
+            slope_threshold=0.75,
+            difficulty_range=(0.0, 0.0),
+            use_cache=False,
+            sub_terrains={
+                "pyramid_stairs": terrain_gen.MeshPyramidStairsTerrainCfg(
+                    proportion=1.0,
+                    step_height_range=(0.10, 0.10),
+                    step_width=0.30,
+                    platform_width=3.0,
+                    border_width=0.0,
+                    holes=False,
+                ),
+            },
+        )
+
+        # Do not use terrain curriculum during evaluation.
+        self.scene.terrain.max_init_terrain_level = 0
+        self.scene.terrain.terrain_generator.curriculum = False
+        self.curriculum.terrain_levels = None
+        self.curriculum.lin_vel_cmd_levels = None
+
+        # Fixed velocity command.
+        cmd = self.commands.base_velocity
+        cmd.ranges.lin_vel_x = (0.5, 0.5)
+        cmd.ranges.lin_vel_y = (0.0, 0.0)
+        cmd.ranges.ang_vel_z = (0.0, 0.0)
+        cmd.limit_ranges.lin_vel_x = (0.5, 0.5)
+        cmd.limit_ranges.lin_vel_y = (0.0, 0.0)
+        cmd.limit_ranges.ang_vel_z = (0.0, 0.0)
+        cmd.rel_standing_envs = 0.0
+        cmd.resampling_time_range = (30.0, 30.0)
+
+        # Disable domain randomization.
+        self.events.physics_material = None
+        self.events.add_base_mass = None
+        self.events.push_robot = None
+
+        # Keep reset events, but fix the initial state.
+        self.events.reset_base.params["pose_range"] = {
+            "x": (-4.8, -4.8),
+            "y": (0.0, 0.0),
+            "yaw": (0.0, 0.0),
+        }
+        self.events.reset_base.params["velocity_range"] = {
+            "x": (0.0, 0.0),
+            "y": (0.0, 0.0),
+            "z": (0.0, 0.0),
+            "roll": (0.0, 0.0),
+            "pitch": (0.0, 0.0),
+            "yaw": (0.0, 0.0),
+        }
+        self.events.reset_robot_joints.params["velocity_range"] = (0.0, 0.0)
