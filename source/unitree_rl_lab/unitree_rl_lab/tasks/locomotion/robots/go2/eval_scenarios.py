@@ -5,9 +5,16 @@ Everything else (no randomization, no noise, fixed seed, 1 env) lives in
 RobotEvalEnvCfg (velocity_env_cfg.py).
 
 Coordinates spawn_x / goal_x / midpoint_x are in metres, along +x, relative to the CENTRE of
-the terrain tile (the terrain origin). The robot spawns facing heading (default +x) and a
-heading-hold event overrides the yaw-rate command every step, so the robot keeps walking
-perpendicular to the obstacle even after stumbling.
+the terrain tile (the terrain origin). The robot spawns on the flat ground in front of the obstacle,
+facing heading (default +x), and a heading-hold event overrides the yaw-rate command every step, so
+the robot keeps walking perpendicular to the obstacle even after stumbling. The episode ends as soon as
+the goal line is crossed. Pyramids are crossed completely (up AND down, or down AND up).
+
+Two groups of scenarios:
+  * hand-made sweeps:  flat, stairs_up_<N>cm, slope_up_<s>
+  * rough_*: the exact sub-terrains of ROUGH_TERRAINS_CFG (the terrain set used for training),
+    each at fixed difficulty levels. They are read from the same config object the training uses, so
+    they follow any change you make to it.
 
 NOTE: import this module only after the Isaac Sim app has been launched (it imports isaaclab.*).
 
@@ -17,6 +24,8 @@ To add a scenario, add one entry to EVAL_SCENARIOS at the bottom of this file.
 from __future__ import annotations
 
 import copy
+import math
+import warnings
 from dataclasses import dataclass
 from typing import Any
 
@@ -27,6 +36,7 @@ import isaaclab.utils.math as math_utils
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG  # terrain set used for training
 
 # Distance between the robot and the nearest edge of the obstacle at spawn.
 SPAWN_CLEARANCE = 0.7
@@ -38,7 +48,7 @@ MAX_YAW_RATE = 1.0
 
 
 ##
-# Reset event
+# Events / terminations
 ##
 
 
@@ -53,8 +63,9 @@ def reset_root_state_fixed(
     """Reset the robot to a fixed pose given relative to the terrain tile centre.
 
     x/y are measured from the tile centre. Height is the robot's default height above the WORLD
-    ground (z = 0), not above the terrain origin: the origin of pyramid-like tiles lies on top of the
-    pyramid, so using it would drop the robot from that height when it spawns on the flat border.
+    ground (z = 0), not above the terrain origin: the origin of pyramid-like tiles lies on top of (or
+    inside) the obstacle, so using it would drop the robot from that height when it spawns on the flat
+    border. The flat ground around every obstacle of the training terrain set is at z = 0.
     """
     asset = env.scene[asset_cfg.name]
     default = asset.data.default_root_state[env_ids].clone()
@@ -78,7 +89,7 @@ def hold_heading(
     command_name: str = "base_velocity",
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
 ):
-    """Keep the base yaw at heading (world frame) by overriding the yaw-rate command.
+    """Keep the base yaw at ``heading`` (world frame) by overriding the yaw-rate command.
 
     Registered as an "interval" event that fires every env step. Interval events run after the command
     manager has updated the command and before observations are computed, so the policy sees the
@@ -108,7 +119,7 @@ def goal_reached(
 @dataclass(frozen=True)
 class EvalScenario:
     description: str
-    sub_terrain: Any  # an isaaclab.terrains sub-terrain cfg (proportion must be 1.0)
+    sub_terrain: Any  # an isaaclab.terrains sub-terrain cfg (proportion is forced to 1.0)
     size: float  # side of the square terrain tile, m
     vx: float  # constant velocity command, m/s
     spawn_x: float  # spawn position relative to the tile centre, m
@@ -117,7 +128,9 @@ class EvalScenario:
     wz: float = 0.0  # only used when hold_heading is False
     heading: float = 0.0  # spawn yaw and target yaw, rad (0 = facing +x)
     hold_heading: bool = True
+    difficulty: float = 0.0  # terrain difficulty in [0, 1] (interpolates the *_range fields of the sub-terrain)
     midpoint_x: float | None = None  # optional milestone, e.g. the top of a pyramid
+    midpoint_label: str = "top"  # what the midpoint is: top / bottom / center
     timeout_margin_s: float = 5.0
 
     @property
@@ -128,25 +141,29 @@ class EvalScenario:
 
 
 def apply_eval_scenario(env_cfg, name: str) -> EvalScenario:
-    """Apply scenario name to a RobotEvalEnvCfg instance (in place)."""
+    """Apply scenario name to a RobotEvalEnvCfg instance (in place).
+
+    env_cfg.seed must be set BEFORE calling this: it also seeds the terrain generator, which
+    matters for the randomized terrains (boxes, random_rough).
+    """
     if name not in EVAL_SCENARIOS:
         raise ValueError(f"Unknown eval scenario '{name}'. Available: {', '.join(EVAL_SCENARIOS)}")
     sc = EVAL_SCENARIOS[name]
 
-    # terrain: a single fixed tile surrounded by the generator's flat border
-    env_cfg.scene.terrain.terrain_generator = terrain_gen.TerrainGeneratorCfg(
-        size=(sc.size, sc.size),
-        border_width=20.0,
-        num_rows=1,
-        num_cols=1,
-        horizontal_scale=0.1,
-        vertical_scale=0.005,
-        slope_threshold=0.75,
-        difficulty_range=(0.0, 0.0),
-        use_cache=False,
-        curriculum=False,
-        sub_terrains={name: copy.deepcopy(sc.sub_terrain)},
-    )
+    # terrain: a single fixed tile. Start from the training generator so that scales, border and slope
+    # threshold are identical to training.
+    gen = copy.deepcopy(ROUGH_TERRAINS_CFG)
+    gen.size = (sc.size, sc.size)
+    gen.num_rows = 1
+    gen.num_cols = 1
+    gen.curriculum = False
+    gen.difficulty_range = (sc.difficulty, sc.difficulty)
+    gen.use_cache = False
+    gen.seed = env_cfg.seed
+    sub = copy.deepcopy(sc.sub_terrain)
+    sub.proportion = 1.0
+    gen.sub_terrains = {name: sub}
+    env_cfg.scene.terrain.terrain_generator = gen
     env_cfg.scene.terrain.max_init_terrain_level = 0
 
     # constant velocity command
@@ -182,7 +199,7 @@ def apply_eval_scenario(env_cfg, name: str) -> EvalScenario:
 
 
 ##
-# Scenario builders
+# Hand-made scenario builders
 ##
 
 _STAIRS_SIZE = 6.6  # with step_width=0.3 and platform_width=3.0 this gives 6 stair layers
@@ -234,6 +251,75 @@ def _slope_up(slope: float) -> EvalScenario:
 
 
 ##
+# Scenarios derived from ROUGH_TERRAINS_CFG (the terrain set used for training)
+##
+
+# ROUGH sub-terrain key -> difficulty levels to test. None = the generator ignores difficulty for it.
+# Stairs only differ by a few millimetres across difficulty in ROUGH, so only the hardest level is tested.
+_ROUGH_LEVELS: dict[str, tuple[float | None, ...]] = {
+    "pyramid_stairs": (1.0,),
+    "pyramid_stairs_inv": (1.0,),
+    "boxes": (0.5, 1.0),
+    "random_rough": (None,),
+    "hf_pyramid_slope": (0.5, 1.0),
+    "hf_pyramid_slope_inv": (0.5, 1.0),
+}
+
+
+def _lerp(rng: tuple[float, float], d: float) -> float:
+    return rng[0] + d * (rng[1] - rng[0])
+
+
+def _obstacle_half_width(sub, size: float) -> float:
+    """Half of the side of the part of the tile that actually contains the obstacle."""
+    if hasattr(sub, "grid_width"):  # MeshRandomGridTerrain: whole cells + a thin flat border
+        return int(size / sub.grid_width) * sub.grid_width / 2.0
+    return size / 2.0 - getattr(sub, "border_width", 0.0)
+
+
+def _describe_obstacle(sub, d: float) -> str:
+    if hasattr(sub, "step_height_range"):
+        return f"steps {_lerp(sub.step_height_range, d) * 100:.1f} cm high, {sub.step_width * 100:.0f} cm wide"
+    if hasattr(sub, "slope_range"):
+        s = _lerp(sub.slope_range, d)
+        return f"slope {s:.2f} rise/run ({math.degrees(math.atan(s)):.0f} deg)"
+    if hasattr(sub, "grid_height_range"):
+        return f"random blocks {sub.grid_width * 100:.0f} cm wide, height +-{_lerp(sub.grid_height_range, d) * 100:.1f} cm"
+    if hasattr(sub, "noise_range"):
+        return f"uniform height noise {sub.noise_range[0] * 100:.0f}..{sub.noise_range[1] * 100:.0f} cm"
+    return type(sub).__name__
+
+
+def _rough_scenario(key: str, difficulty: float | None) -> tuple[str, EvalScenario]:
+    sub = copy.deepcopy(ROUGH_TERRAINS_CFG.sub_terrains[key])
+    size = float(ROUGH_TERRAINS_CFG.size[0])
+    half = _obstacle_half_width(sub, size)
+    d = 1.0 if difficulty is None else difficulty
+
+    inverted = bool(getattr(sub, "inverted", False)) or "Inverted" in type(sub).__name__
+    if hasattr(sub, "noise_range"):  # rough ground: no obvious milestone
+        midpoint_x, label = None, "top"
+    elif hasattr(sub, "grid_height_range"):
+        midpoint_x, label = 0.0, "center"
+    else:
+        midpoint_x, label = 0.0, ("bottom" if inverted else "top")
+
+    name = f"rough_{key}" + ("" if difficulty is None else f"_d{round(difficulty * 100)}")
+    level = "" if difficulty is None else f" @ difficulty {d:.2f}"
+    return name, EvalScenario(
+        description=f"ROUGH '{key}'{level}: {_describe_obstacle(sub, d)}; crossed completely",
+        sub_terrain=sub,
+        size=size,
+        vx=0.5,
+        spawn_x=-(half + SPAWN_CLEARANCE),
+        goal_x=half + SPAWN_CLEARANCE,
+        difficulty=d,
+        midpoint_x=midpoint_x,
+        midpoint_label=label,
+    )
+
+
+##
 # Registry. Add new scenarios here.
 ##
 
@@ -243,3 +329,14 @@ EVAL_SCENARIOS: dict[str, EvalScenario] = {
     "slope_up_0p2": _slope_up(0.2),
     "slope_up_0p4": _slope_up(0.4),
 }
+
+for _key in ROUGH_TERRAINS_CFG.sub_terrains:
+    if _key not in _ROUGH_LEVELS:
+        warnings.warn(f"eval_scenarios: ROUGH sub-terrain '{_key}' has no evaluation scenario (add it to _ROUGH_LEVELS).")
+for _key, _levels in _ROUGH_LEVELS.items():
+    if _key not in ROUGH_TERRAINS_CFG.sub_terrains:
+        warnings.warn(f"eval_scenarios: '{_key}' is not in ROUGH_TERRAINS_CFG, scenario skipped.")
+        continue
+    for _level in _levels:
+        _name, _scenario = _rough_scenario(_key, _level)
+        EVAL_SCENARIOS[_name] = _scenario
