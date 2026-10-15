@@ -73,3 +73,6 @@ datasets
 
 # Mimic
 *.npz
+
+# GUI Configurations
+scripts/rsl_rl/eval_configs/

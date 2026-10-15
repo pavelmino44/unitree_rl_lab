@@ -4,7 +4,13 @@ Every (scenario, seed) pair runs in its OWN process (a fresh Isaac Sim instance)
 environment inside one process is unreliable, so with several scenarios/seeds this script does not
 launch Isaac Sim itself: it starts one child process per pair and merges their reports.
 
-Examples (run from the unitree_rl_lab root, in the conda env):
+Two ways to start it (run from the unitree_rl_lab root, in the conda env):
+  * with a window to set everything up (task, scenarios, episodes, seeds, checkpoint / load run, report
+    path, headless / real-time, device; configurations can be saved and loaded):
+        python scripts/rsl_rl/evaluate.py --gui
+  * the classic way, everything on the command line (examples below).
+
+Examples:
     # watch the scene like in play.py, metrics are printed per episode and as tables at the end
     python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --scenarios stairs_up_10cm --real-time
 
@@ -15,7 +21,7 @@ Examples (run from the unitree_rl_lab root, in the conda env):
     # patterns work too
     python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "rough_boxes*,flat"
 
---scenarios accepts: exact names, glob patterns (stairs_up_*), rough (= rough_*) and all.
+--scenarios accepts: exact names, glob patterns (``stairs_up_*``), ``rough`` (= ``rough_*``) and ``all``.
 --eval_seed accepts a comma-separated list. The seed controls the terrain realization of the randomized
 obstacles (boxes, random_rough); episodes of all seeds of a scenario are pooled in the summary.
 
@@ -40,6 +46,7 @@ import argparse
 import fnmatch
 import json
 import os
+import shlex
 import statistics
 import subprocess
 import sys
@@ -220,10 +227,43 @@ parser.add_argument(
 parser.add_argument("--output", type=str, default=None, help="Path of the JSON report.")
 parser.add_argument("--disable_fabric", action="store_true", default=False, help="Disable fabric.")
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real time (useful with the GUI).")
+parser.add_argument(
+    "--gui",
+    action="store_true",
+    default=False,
+    help="Open a window to configure the run. All other arguments are then set in the window.",
+)
 parser.add_argument("--list_scenarios_to", type=str, default=None, help=argparse.SUPPRESS)  # internal
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
+
+
+def _catalog_cmd(path: str) -> list[str]:
+    """Command that writes the scenario/task catalog to ``path`` (starts a short headless Isaac Sim)."""
+    return [sys.executable, os.path.abspath(__file__), "--headless", "--list_scenarios_to", path]
+
+
+_FROM_GUI = False
+if args_cli.gui:
+    if len(sys.argv) > 2:
+        print("[WARN] With --gui the other command-line arguments are ignored: set them in the window.")
+    try:
+        import eval_gui  # tkinter only, no Isaac Sim imports
+
+        _gui_argv = eval_gui.run_gui(_catalog_cmd)
+    except ImportError as e:
+        sys.exit(f"[ERROR] The GUI needs tkinter ({e}). Install it (conda install tk) or run without --gui.")
+    except RuntimeError as e:
+        sys.exit(f"[ERROR] {e}")
+    if _gui_argv is None:
+        print("[INFO] Cancelled.")
+        sys.exit(0)
+    # from here on everything works exactly as if these arguments had been typed in the terminal
+    sys.argv = [sys.argv[0], *_gui_argv]
+    args_cli = parser.parse_args()
+    _FROM_GUI = True
+    print("[INFO] Equivalent command:\n  python " + shlex.join([sys.argv[0], *_gui_argv]), flush=True)
 
 ##
 # Parent mode: several scenarios / seeds -> one child process per pair, Isaac Sim is NOT launched here
@@ -248,7 +288,8 @@ def _run_children(args) -> int:
             print("[ERROR] Could not get the list of scenarios.")
             return 1
         with open(names_file) as f:
-            registry = json.load(f)
+            data = json.load(f)
+        registry = list(data["scenarios"]) if isinstance(data, dict) else list(data)
         try:
             names = _expand(tokens, registry)
         except ValueError as e:
@@ -307,7 +348,7 @@ def _run_children(args) -> int:
 _tok = _tokens(args_cli.scenarios)
 _single_seed = len([s for s in args_cli.eval_seed.split(",") if s.strip()]) == 1
 _is_single = len(_tok) == 1 and not _is_pattern(_tok[0]) and _single_seed
-if not _is_single and not args_cli.list_scenarios_to:
+if (not _is_single or _FROM_GUI) and not args_cli.list_scenarios_to:
     sys.exit(_run_children(args_cli))
 
 ##
@@ -554,8 +595,14 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
 def main():
     if args_cli.list_scenarios_to:
-        with open(args_cli.list_scenarios_to, "w") as f:
-            json.dump(list(EVAL_SCENARIOS), f)
+        tasks = sorted(spec.id for spec in gym.registry.values() if spec.kwargs.get("eval_env_cfg_entry_point"))
+        catalog = {
+            "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "tasks": tasks,
+            "scenarios": {k: v.description for k, v in EVAL_SCENARIOS.items()},
+        }
+        with open(args_cli.list_scenarios_to, "w", encoding="utf-8") as f:
+            json.dump(catalog, f, ensure_ascii=False, indent=1)
         return
 
     name = args_cli.scenarios.strip()

@@ -2,23 +2,23 @@
 
 A scenario = terrain + constant velocity command + spawn point + goal line.
 Everything else (no randomization, no noise, fixed seed, 1 env) lives in
-RobotEvalEnvCfg (velocity_env_cfg.py).
+``RobotEvalEnvCfg`` (velocity_env_cfg.py).
 
-Coordinates spawn_x / goal_x / midpoint_x are in metres, along +x, relative to the CENTRE of
+Coordinates ``spawn_x`` / ``goal_x`` / ``midpoint_x`` are in metres, along +x, relative to the CENTRE of
 the terrain tile (the terrain origin). The robot spawns on the flat ground in front of the obstacle,
-facing heading (default +x), and a heading-hold event overrides the yaw-rate command every step, so
+facing ``heading`` (default +x), and a heading-hold event overrides the yaw-rate command every step, so
 the robot keeps walking perpendicular to the obstacle even after stumbling. The episode ends as soon as
 the goal line is crossed. Pyramids are crossed completely (up AND down, or down AND up).
 
 Two groups of scenarios:
-  * hand-made sweeps:  flat, stairs_up_<N>cm, slope_up_<s>
-  * rough_*: the exact sub-terrains of ROUGH_TERRAINS_CFG (the terrain set used for training),
+  * hand-made sweeps:  ``flat``, ``stairs_up_<N>cm`` (N = 5, 10, 11, ..., 20), ``slope_up_<s>``
+  * ``rough_*``: the exact sub-terrains of ``ROUGH_TERRAINS_CFG`` (the terrain set used for training),
     each at fixed difficulty levels. They are read from the same config object the training uses, so
     they follow any change you make to it.
 
 NOTE: import this module only after the Isaac Sim app has been launched (it imports isaaclab.*).
 
-To add a scenario, add one entry to EVAL_SCENARIOS at the bottom of this file.
+To add a scenario, add one entry to ``EVAL_SCENARIOS`` at the bottom of this file.
 """
 
 from __future__ import annotations
@@ -141,9 +141,9 @@ class EvalScenario:
 
 
 def apply_eval_scenario(env_cfg, name: str) -> EvalScenario:
-    """Apply scenario name to a RobotEvalEnvCfg instance (in place).
+    """Apply scenario ``name`` to a ``RobotEvalEnvCfg`` instance (in place).
 
-    env_cfg.seed must be set BEFORE calling this: it also seeds the terrain generator, which
+    ``env_cfg.seed`` must be set BEFORE calling this: it also seeds the terrain generator, which
     matters for the randomized terrains (boxes, random_rough).
     """
     if name not in EVAL_SCENARIOS:
@@ -203,6 +203,9 @@ def apply_eval_scenario(env_cfg, name: str) -> EvalScenario:
 ##
 
 _STAIRS_SIZE = 6.6  # with step_width=0.3 and platform_width=3.0 this gives 6 stair layers
+
+# Step heights of the hand-made staircase sweep, in cm: 5 and 10 as before, then every centimetre up to 20.
+STAIRS_STEP_HEIGHTS_CM: tuple[int, ...] = (5, *range(10, 21))
 
 
 def _flat() -> EvalScenario:
@@ -325,7 +328,7 @@ def _rough_scenario(key: str, difficulty: float | None) -> tuple[str, EvalScenar
 
 EVAL_SCENARIOS: dict[str, EvalScenario] = {
     "flat": _flat(),
-    **{f"stairs_up_{round(h * 100)}cm": _stairs_up(h) for h in (0.05, 0.10, 0.15, 0.20)},
+    **{f"stairs_up_{cm}cm": _stairs_up(cm / 100.0) for cm in STAIRS_STEP_HEIGHTS_CM},
     "slope_up_0p2": _slope_up(0.2),
     "slope_up_0p4": _slope_up(0.4),
 }
