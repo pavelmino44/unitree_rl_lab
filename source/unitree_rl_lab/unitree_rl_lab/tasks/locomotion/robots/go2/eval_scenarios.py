@@ -16,6 +16,9 @@ Two groups of scenarios:
     each at fixed difficulty levels. They are read from the same config object the training uses, so
     they follow any change you make to it.
 
+The commanded forward speed of every scenario defaults to 0.5 m/s and can be overridden with
+``apply_eval_scenario(..., speed=...)`` (``--speed`` in evaluate.py / play.py).
+
 NOTE: import this module only after the Isaac Sim app has been launched (it imports isaaclab.*).
 
 To add a scenario, add one entry to ``EVAL_SCENARIOS`` at the bottom of this file.
@@ -24,6 +27,7 @@ To add a scenario, add one entry to ``EVAL_SCENARIOS`` at the bottom of this fil
 from __future__ import annotations
 
 import copy
+import dataclasses
 import math
 import warnings
 from dataclasses import dataclass
@@ -131,6 +135,7 @@ class EvalScenario:
     difficulty: float = 0.0  # terrain difficulty in [0, 1] (interpolates the *_range fields of the sub-terrain)
     midpoint_x: float | None = None  # optional milestone, e.g. the top of a pyramid
     midpoint_label: str = "top"  # what the midpoint is: top / bottom / center
+    obstacle_half_width: float | None = None  # the obstacle spans [-w, +w] along x (for plots); None = no obstacle
     timeout_margin_s: float = 5.0
 
     @property
@@ -140,15 +145,67 @@ class EvalScenario:
         return 2.0 * ideal + self.timeout_margin_s
 
 
-def apply_eval_scenario(env_cfg, name: str) -> EvalScenario:
-    """Apply scenario ``name`` to a ``RobotEvalEnvCfg`` instance (in place).
+def find_trunk_contact_terms(env_cfg) -> list[dict]:
+    """Termination terms that end the episode on contact of a robot body with the surroundings.
+
+    Detected by their ``sensor_cfg`` parameter (e.g. ``illegal_contact`` on the "base" body). Returns
+    dicts with the term name, the contact sensor name, the body name(s) and the force threshold, i.e. the
+    exact definition of "trunk contact" used by the training.
+    """
+    terms = []
+    for term_name, term in vars(env_cfg.terminations).items():
+        params = getattr(term, "params", None) or {}
+        sensor_cfg = params.get("sensor_cfg")
+        if sensor_cfg is not None and getattr(sensor_cfg, "name", None):
+            terms.append(
+                {
+                    "term": term_name,
+                    "sensor": sensor_cfg.name,
+                    "body_names": sensor_cfg.body_names,
+                    "threshold": float(params.get("threshold", 1.0)),
+                }
+            )
+    return terms
+
+
+def scenario_meta(sc: EvalScenario) -> dict:
+    """Scenario data that the report viewer needs for its plots."""
+    return {
+        "description": sc.description,
+        "command_speed_mps": sc.vx,
+        "spawn_x": sc.spawn_x,
+        "goal_x": sc.goal_x,
+        "midpoint_x": sc.midpoint_x,
+        "midpoint_label": sc.midpoint_label,
+        "obstacle_half_width": sc.obstacle_half_width,
+    }
+
+
+def apply_eval_scenario(
+    env_cfg, name: str, speed: float | None = None, contact_termination: bool = True
+) -> EvalScenario:
+    """Apply scenario ``name`` to a ``RobotEvalEnvCfg`` instance (in place) and return the effective scenario.
 
     ``env_cfg.seed`` must be set BEFORE calling this: it also seeds the terrain generator, which
     matters for the randomized terrains (boxes, random_rough).
+
+    speed: commanded forward speed in m/s; None keeps the scenario's own (0.5).
+    contact_termination: False removes the terminations on trunk contact ("base_contact"), so that the
+        episode goes on after the trunk touches the ground and every contact can be recorded.
     """
     if name not in EVAL_SCENARIOS:
         raise ValueError(f"Unknown eval scenario '{name}'. Available: {', '.join(EVAL_SCENARIOS)}")
     sc = EVAL_SCENARIOS[name]
+    if speed is not None:
+        if speed <= 0.0:
+            raise ValueError(f"The commanded speed must be positive, got {speed}.")
+        low, high = env_cfg.commands.base_velocity.limit_ranges.lin_vel_x  # range the policy was trained on
+        if not low <= speed <= high:
+            print(f"[WARN] Commanded speed {speed} m/s is outside the training range [{low}, {high}] m/s.", flush=True)
+        sc = dataclasses.replace(sc, vx=float(speed))
+    if not contact_termination:
+        for term in find_trunk_contact_terms(env_cfg):
+            setattr(env_cfg.terminations, term["term"], None)
 
     # terrain: a single fixed tile. Start from the training generator so that scales, border and slope
     # threshold are identical to training.
@@ -235,6 +292,7 @@ def _stairs_up(step_h: float) -> EvalScenario:
         spawn_x=-(_STAIRS_SIZE / 2 + SPAWN_CLEARANCE),
         goal_x=_STAIRS_SIZE / 2 + SPAWN_CLEARANCE,  # far side of the pyramid: up AND down
         midpoint_x=0.0,  # centre of the top platform
+        obstacle_half_width=_STAIRS_SIZE / 2,
     )
 
 
@@ -250,6 +308,7 @@ def _slope_up(slope: float) -> EvalScenario:
         spawn_x=-(size / 2 + SPAWN_CLEARANCE),
         goal_x=size / 2 + SPAWN_CLEARANCE,
         midpoint_x=0.0,
+        obstacle_half_width=size / 2 - 0.25,  # the 0.25 m border of the sloped terrain is flat
     )
 
 
@@ -319,6 +378,7 @@ def _rough_scenario(key: str, difficulty: float | None) -> tuple[str, EvalScenar
         difficulty=d,
         midpoint_x=midpoint_x,
         midpoint_label=label,
+        obstacle_half_width=half,
     )
 
 

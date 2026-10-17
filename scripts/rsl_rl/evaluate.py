@@ -21,9 +21,23 @@ Examples:
     # patterns work too
     python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "rough_boxes*,flat"
 
+    # another commanded speed, and let the episode go on after the trunk touches the ground
+    python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "stairs_up_*" \
+        --speed 0.3 --no_contact_termination
+
 --scenarios accepts: exact names, glob patterns (``stairs_up_*``), ``rough`` (= ``rough_*``) and ``all``.
 --eval_seed accepts a comma-separated list. The seed controls the terrain realization of the randomized
 obstacles (boxes, random_rough); episodes of all seeds of a scenario are pooled in the summary.
+--speed sets the commanded forward speed in m/s (default: 0.5, the value built into the scenarios).
+--no_contact_termination removes the training termination on trunk contact, so that the whole episode is
+observed and every trunk contact can be shown on the timeline (by default one contact ends the episode,
+exactly as in training).
+
+When the runs are finished the report viewer (eval_report.py) opens: one window per episode (speed vs. time
+with the commanded speed, trunk-contact timeline, all numbers), one window per scenario (averages over its
+episodes) and one window for the whole run. It can also be started on its own on a saved report:
+    python scripts/rsl_rl/eval_report.py path/to/report.json
+Use --no_report to skip it, --report_save DIR to also write the figures as PNG files.
 
 Metrics (per scenario, over all pooled episodes)
   Task:        success_rate (goal line crossed; for pyramids: the far side = climb AND descent),
@@ -35,6 +49,10 @@ Metrics (per scenario, over all pooled episodes)
   Efficiency:  mean_power_w (sum |torque * joint_vel|), cost_of_transport (E / (m g d))
   Smoothness:  action_rate (|a_t - a_t-1|), joint_acc (|qdd|)
   Stability:   tilt_deg (angle between base z-axis and gravity: mean and max)
+  Trunk contact: events (contacts closer than 0.1 s count as one), contact time, first contact, max force;
+               "trunk" = the bodies and force threshold of the training termination (e.g. base_contact)
+  Time series: every episode stores a down-sampled (--record_dt, default 0.1 s) time series of the speed,
+               command, position, heading error, tilt, power and trunk contact for the report viewer
   Training-like: total_reward per episode, reward_terms_per_s (each reward term averaged per second, the
                same quantity as Episode_Reward/<term> in the training logs for a full-length episode),
                end_reasons (which termination terms ended the episode)
@@ -46,15 +64,19 @@ import argparse
 import fnmatch
 import json
 import os
+import re
 import shlex
 import statistics
 import subprocess
 import sys
 import tempfile
 import time
+import warnings
 from collections import Counter
 from datetime import datetime
 from importlib.metadata import version
+
+import numpy as np
 
 from isaaclab.app import AppLauncher
 
@@ -69,6 +91,82 @@ import cli_args  # isort: skip
 def _mean(values):
     values = [v for v in values if v is not None]
     return statistics.mean(values) if values else None
+
+
+# Channels of the recorded time series (columns of the per-step rows).
+SERIES_CHANNELS = (
+    "vx", "vy", "wz",  # measured base velocity, body frame (m/s, m/s, rad/s)
+    "cmd_vx", "cmd_vy", "cmd_wz",  # commanded velocity
+    "x", "y",  # position relative to the terrain tile centre (m)
+    "yaw_err_deg", "tilt_deg", "power_w",
+    "contact_force_n",  # largest trunk contact force during the step (N)
+    "contact",  # 1 while the trunk is in contact
+)  # fmt: skip
+CONTACT_COL, FORCE_COL = SERIES_CHANNELS.index("contact"), SERIES_CHANNELS.index("contact_force_n")
+CONTACT_MERGE_GAP_S = 0.1  # trunk contacts closer than this count as one event
+CONTACT_KEYS = (
+    "trunk_contact_events", "trunk_contact_time_s", "first_trunk_contact_s",
+    "max_trunk_contact_force_n", "trunk_contact_intervals_s",
+)  # fmt: skip
+
+
+def _runs(mask: np.ndarray) -> list[tuple[int, int]]:
+    """[start, end) index pairs of the runs of True in a boolean array."""
+    d = np.diff(np.concatenate(([0], mask.astype(np.int8), [0])))
+    return list(zip(np.flatnonzero(d == 1).tolist(), np.flatnonzero(d == -1).tolist()))
+
+
+def contact_intervals(mask: np.ndarray, dt: float, merge_gap_s: float = CONTACT_MERGE_GAP_S) -> list[list[float]]:
+    """Time intervals (s) in which ``mask`` (one value per control step) is True; close ones are merged."""
+    gap = int(round(merge_gap_s / dt))
+    merged: list[list[int]] = []
+    for start, end in _runs(mask):
+        if merged and start - merged[-1][1] <= gap:
+            merged[-1][1] = end
+        else:
+            merged.append([start, end])
+    return [[start * dt, end * dt] for start, end in merged]
+
+
+def _jsonable(column: np.ndarray, digits: int = 4) -> list:
+    return [round(float(v), digits) if np.isfinite(v) else None for v in column]
+
+
+def finalize_episode(rows: list, dt: float, record_dt: float) -> tuple[dict, dict]:
+    """Turn the per-step rows of one finished episode into (time series for the report, contact metrics).
+
+    The series is down-sampled to ``record_dt``: block means, except the contact force and the contact flag,
+    which use the block maximum so that a short contact is never lost. The contact metrics are computed
+    from the full-rate data.
+    """
+    arr = np.asarray(rows, dtype=np.float64).reshape(len(rows), len(SERIES_CHANNELS))
+    steps = len(arr)
+    contact = arr[:, CONTACT_COL] > 0.5
+    intervals = contact_intervals(contact, dt)
+    force = arr[contact & np.isfinite(arr[:, FORCE_COL]), FORCE_COL]
+    metrics = {
+        "trunk_contact_events": len(intervals),
+        "trunk_contact_time_s": float(contact.sum() * dt),
+        "first_trunk_contact_s": round(intervals[0][0], 3) if intervals else None,
+        "max_trunk_contact_force_n": float(force.max()) if force.size else None,
+        "trunk_contact_intervals_s": [[round(a, 3), round(b, 3)] for a, b in intervals],
+    }
+
+    k = max(1, int(round(record_dt / dt)))
+    blocks = -(-steps // k)
+    if blocks * k > steps:
+        arr = np.vstack([arr, np.full((blocks * k - steps, arr.shape[1]), np.nan)])
+    grouped = arr.reshape(blocks, k, -1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")  # blocks without valid data
+        reduced = np.nanmean(grouped, axis=1)
+        biggest = np.nanmax(grouped, axis=1)
+    reduced[:, [FORCE_COL, CONTACT_COL]] = biggest[:, [FORCE_COL, CONTACT_COL]]
+    times = np.minimum((np.arange(blocks) + 1) * k, steps) * dt
+    series = {"dt": round(k * dt, 4), "t": _jsonable(times, 3)}
+    for name, column in zip(SERIES_CHANNELS, reduced.T):
+        series[name] = _jsonable(column)
+    return series, metrics
 
 
 def _f(value, spec: str) -> str:
@@ -115,6 +213,15 @@ def summarize(episodes: list[dict]) -> dict:
         # stability
         "mean_tilt_deg": mean_of("mean_tilt_deg"),
         "worst_max_tilt_deg": worst_of("max_tilt_deg"),
+        # trunk contacts (None if the contact sensor was not found)
+        "mean_trunk_contacts_per_episode": mean_of("trunk_contact_events"),
+        "trunk_contact_episode_rate": (
+            sum(e["trunk_contact_events"] > 0 for e in episodes if e.get("trunk_contact_events") is not None)
+            / max(1, sum(e.get("trunk_contact_events") is not None for e in episodes))
+            if any(e.get("trunk_contact_events") is not None for e in episodes) else None
+        ),
+        "mean_trunk_contact_time_s": mean_of("trunk_contact_time_s"),
+        "worst_trunk_contact_force_n": worst_of("max_trunk_contact_force_n"),
         # training-like
         "mean_total_reward": mean_of("total_reward"),
         "reward_terms_per_s": {k: _mean(e.get("reward_terms_per_s", {}).get(k) for e in episodes) for k in term_keys},
@@ -145,12 +252,13 @@ def print_tables(results: dict):
     print("yaw err / lateral: worst case over episodes")
 
     # --- table 2: motion quality ---------------------------------------------------------------
+    line = "=" * (w + 123)
     print("\n" + line)
     print(
         f"{'scenario':<{w}}{'vel err xy':>11}{'vel err yaw':>12}{'speed':>8}{'power, W':>10}{'CoT':>7}"
-        f"{'act. rate':>11}{'joint acc':>11}{'tilt max':>10}{'reward':>9}"
+        f"{'act. rate':>11}{'joint acc':>11}{'tilt max':>10}{'reward':>9}{'contacts/ep':>13}{'w/ contact':>11}"
     )
-    print("-" * (w + 100))
+    print("-" * (w + 123))
     for name, r in results.items():
         s = r["summary"]
         print(
@@ -158,10 +266,12 @@ def print_tables(results: dict):
             f"{_f(s['mean_forward_speed_mps'], '.2f'):>8}{_f(s['mean_power_w'], '.0f'):>10}"
             f"{_f(s['mean_cost_of_transport'], '.2f'):>7}{_f(s['mean_action_rate'], '.2f'):>11}"
             f"{_f(s['mean_joint_acc'], '.0f'):>11}{_f(s['worst_max_tilt_deg'], '.0f'):>10}"
-            f"{_f(s['mean_total_reward'], '.1f'):>9}"
+            f"{_f(s['mean_total_reward'], '.1f'):>9}{_f(s['mean_trunk_contacts_per_episode'], '.2f'):>13}"
+            f"{_f(s['trunk_contact_episode_rate'], '.0%'):>11}"
         )
     print(line)
     print("vel err: m/s and rad/s | speed: m/s along +x | tilt max: deg, worst case | reward: mean sum per episode")
+    print("contacts/ep: trunk contact events per episode | w/ contact: share of episodes with a trunk contact")
 
     # --- end reasons -----------------------------------------------------------------------------
     print("\nEpisode end reasons:")
@@ -184,6 +294,14 @@ def _drop_args(argv: list[str], flags: set[str]) -> list[str]:
         else:
             out.append(a)
     return out
+
+
+def _dump_json(obj, path: str):
+    """Write indented JSON, but keep every list of plain numbers on one line (the time series are long)."""
+    text = json.dumps(obj, indent=2)
+    text = re.sub(r'\[\s+([^\[\]{}"]*?)\s+\]', lambda m: "[" + re.sub(r"\s+", " ", m.group(1)) + "]", text)
+    with open(path, "w") as f:
+        f.write(text)
 
 
 def _default_report_path(checkpoint: str, stamp: str) -> str:
@@ -225,6 +343,27 @@ parser.add_argument(
     "--eval_seed", type=str, default="42", help="Environment/terrain seed; a comma-separated list pools several."
 )
 parser.add_argument("--output", type=str, default=None, help="Path of the JSON report.")
+parser.add_argument(
+    "--speed",
+    type=float,
+    default=None,
+    help="Commanded forward speed in m/s (default: 0.5, the value built into the scenarios).",
+)
+parser.add_argument(
+    "--no_contact_termination",
+    action="store_true",
+    default=False,
+    help="Do not end the episode on trunk contact, so that all trunk contacts are recorded.",
+)
+parser.add_argument(
+    "--record_dt", type=float, default=0.1, help="Time step (s) of the time series stored in the report."
+)
+parser.add_argument(
+    "--no_report", action="store_true", default=False, help="Do not open the report viewer when the runs are done."
+)
+parser.add_argument(
+    "--report_save", type=str, default=None, help="Also save the report figures as PNG files into this folder."
+)
 parser.add_argument("--disable_fabric", action="store_true", default=False, help="Disable fabric.")
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real time (useful with the GUI).")
 parser.add_argument(
@@ -234,9 +373,22 @@ parser.add_argument(
     help="Open a window to configure the run. All other arguments are then set in the window.",
 )
 parser.add_argument("--list_scenarios_to", type=str, default=None, help=argparse.SUPPRESS)  # internal
+parser.add_argument("--internal_child", action="store_true", default=False, help=argparse.SUPPRESS)  # internal
 cli_args.add_rsl_rl_args(parser)
 AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
+
+
+def _check_args(args):
+    if args.speed is not None and args.speed <= 0.0:
+        parser.error("--speed must be a positive number (m/s).")
+    if args.episodes < 1:
+        parser.error("--episodes must be at least 1.")
+    if args.record_dt <= 0.0:
+        parser.error("--record_dt must be positive.")
+
+
+_check_args(args_cli)
 
 
 def _catalog_cmd(path: str) -> list[str]:
@@ -244,7 +396,6 @@ def _catalog_cmd(path: str) -> list[str]:
     return [sys.executable, os.path.abspath(__file__), "--headless", "--list_scenarios_to", path]
 
 
-_FROM_GUI = False
 if args_cli.gui:
     if len(sys.argv) > 2:
         print("[WARN] With --gui the other command-line arguments are ignored: set them in the window.")
@@ -262,17 +413,32 @@ if args_cli.gui:
     # from here on everything works exactly as if these arguments had been typed in the terminal
     sys.argv = [sys.argv[0], *_gui_argv]
     args_cli = parser.parse_args()
-    _FROM_GUI = True
+    _check_args(args_cli)
     print("[INFO] Equivalent command:\n  python " + shlex.join([sys.argv[0], *_gui_argv]), flush=True)
 
 ##
-# Parent mode: several scenarios / seeds -> one child process per pair, Isaac Sim is NOT launched here
+# Parent mode: one child process per (scenario, seed) pair. Isaac Sim is NOT launched in this process.
 ##
 
 
 def _child_cmd(extra: list[str]) -> list[str]:
     base = _drop_args(sys.argv[1:], {"--scenarios", "--output", "--list_scenarios_to", "--eval_seed"})
-    return [sys.executable, os.path.abspath(__file__), *base, *extra]
+    return [sys.executable, os.path.abspath(__file__), *base, "--internal_child", *extra]
+
+
+def _open_report(report_path: str, args) -> None:
+    """Open the report viewer on the saved report (blocks until its windows are closed)."""
+    viewer = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eval_report.py")
+    cmd = [sys.executable, viewer, report_path]
+    if args.report_save:
+        cmd += ["--save", args.report_save]
+    print("[INFO] Opening the report viewer (close its windows to finish) ...", flush=True)
+    if subprocess.run(cmd).returncode != 0:
+        print(
+            "[WARN] The report viewer failed (is matplotlib installed?). The report is saved, view it later with:\n"
+            f"  python {viewer} {report_path}",
+            flush=True,
+        )
 
 
 def _run_children(args) -> int:
@@ -319,7 +485,9 @@ def _run_children(args) -> int:
             if report["checkpoint"] != first["checkpoint"]:
                 print(f"[WARN] '{name}' used a different checkpoint: {report['checkpoint']}")
             entry = report["scenarios"][name]
-            slot = pooled.setdefault(name, {"description": entry["description"], "seeds": [], "episodes": []})
+            slot = pooled.setdefault(
+                name, {"description": entry["description"], "meta": entry.get("meta"), "seeds": [], "episodes": []}
+            )
             slot["seeds"].append(int(seed))
             slot["episodes"] += entry["episodes"]
 
@@ -337,22 +505,23 @@ def _run_children(args) -> int:
     out = args.output or _default_report_path(first["checkpoint"], stamp)
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     meta = {k: v for k, v in first.items() if k not in ("scenarios", "seed")}
-    with open(out, "w") as f:
-        json.dump({**meta, "seeds": [int(s) for s in seeds], "date": stamp, "scenarios": results}, f, indent=2)
+    _dump_json(
+        {**meta, "seeds": [int(s) for s in seeds], "speed_override_mps": args.speed, "date": stamp, "scenarios": results},
+        out,
+    )
     print(f"[INFO] Report saved to: {out}")
     if failed:
         print(f"[WARN] {failed} run(s) failed, their episodes are missing from the report.")
+    if not args.no_report:
+        _open_report(out, args)
     return 0 if not failed else 1
 
 
-_tok = _tokens(args_cli.scenarios)
-_single_seed = len([s for s in args_cli.eval_seed.split(",") if s.strip()]) == 1
-_is_single = len(_tok) == 1 and not _is_pattern(_tok[0]) and _single_seed
-if (not _is_single or _FROM_GUI) and not args_cli.list_scenarios_to:
+if not args_cli.list_scenarios_to and not args_cli.internal_child:
     sys.exit(_run_children(args_cli))
 
 ##
-# Child mode: one scenario, one seed, one Isaac Sim instance
+# Child mode: one scenario, one seed, one Isaac Sim instance (started by the parent above)
 ##
 
 app_launcher = AppLauncher(args_cli)
@@ -374,11 +543,38 @@ from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
 from isaaclab_tasks.utils import get_checkpoint_path
 
 import unitree_rl_lab.tasks  # noqa: F401
-from unitree_rl_lab.tasks.locomotion.robots.go2.eval_scenarios import EVAL_SCENARIOS, apply_eval_scenario
+from unitree_rl_lab.tasks.locomotion.robots.go2.eval_scenarios import (
+    EVAL_SCENARIOS,
+    apply_eval_scenario,
+    find_trunk_contact_terms,
+    scenario_meta,
+)
 from unitree_rl_lab.utils.parser_cfg import parse_env_cfg
 
 _UNSET = -1.0e9
 _GRAVITY = 9.81
+
+
+def _setup_trunk_contact(scene, terms: list[dict]) -> dict | None:
+    """Resolve the definition of "trunk contact": the sensor, body ids and force threshold of the training
+    termination (e.g. base_contact). Falls back to the "base" body of the "contact_forces" sensor."""
+    spec = terms[0] if terms else {"sensor": "contact_forces", "body_names": "base", "threshold": 1.0}
+    if spec["sensor"] not in scene.sensors:
+        return None
+    sensor = scene.sensors[spec["sensor"]]
+    ids, names = sensor.find_bodies(spec["body_names"] or "base")
+    if len(ids) == 0:
+        return None
+    return {"sensor": sensor, "name": spec["sensor"], "ids": list(ids), "bodies": list(names), "threshold": spec["threshold"]}
+
+
+def _trunk_force(contact: dict) -> torch.Tensor:
+    """Largest trunk contact force (N) over the last physics steps, same measure as the training termination."""
+    data = contact["sensor"].data
+    history = data.net_forces_w_history
+    if history is None:
+        history = data.net_forces_w.unsqueeze(1)
+    return torch.norm(history[:, :, contact["ids"]], dim=-1).amax(dim=(1, 2))
 
 
 def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
@@ -391,7 +587,10 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         entry_point_key="eval_env_cfg_entry_point",
     )
     env_cfg.seed = seed  # must be set before apply_eval_scenario (it seeds the terrain generator)
-    sc = apply_eval_scenario(env_cfg, name)
+    contact_terms = find_trunk_contact_terms(env_cfg)  # read before they may be removed below
+    sc = apply_eval_scenario(
+        env_cfg, name, speed=args_cli.speed, contact_termination=not args_cli.no_contact_termination
+    )
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -419,6 +618,10 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
     reward_names = list(rew_mgr.active_terms)
     done_names = list(term_mgr.active_terms)
+    contact = _setup_trunk_contact(unwrapped.scene, contact_terms)
+    contact_cols = [done_names.index(t["term"]) for t in contact_terms if t["term"] in done_names]
+    rec_every_s = args_cli.record_dt
+    rows: list[list] = [[] for _ in range(n)]  # per-step rows of the running episodes (see SERIES_CHANNELS)
     try:  # robot mass for the cost of transport (not available in every version)
         mass = robot.data.default_mass.sum(dim=-1).to(dev)
     except Exception:
@@ -457,7 +660,20 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
     z0 = robot.data.root_pos_w[0, 2].item()
     print(f"[INFO] [{name}] seed {seed}: {sc.description}")
     print(f"[INFO] [{name}] spawn x={x0:.2f} m (rel. to tile centre), z={z0:.2f} m (world); goal x={sc.goal_x:.2f} m")
-    print(f"[INFO] [{name}] running {args_cli.episodes} episodes, up to {sc.episode_length_s:.0f} s each", flush=True)
+    print(
+        f"[INFO] [{name}] command: {sc.vx:.2f} m/s forward, running {args_cli.episodes} episodes, "
+        f"up to {sc.episode_length_s:.0f} s each",
+        flush=True,
+    )
+    if contact is None:
+        print(f"[WARN] [{name}] trunk contact sensor not found: trunk contact metrics are disabled.", flush=True)
+    else:
+        print(
+            f"[INFO] [{name}] trunk contact = sensor '{contact['name']}', bodies {contact['bodies']}, "
+            f"> {contact['threshold']} N; "
+            + ("a contact ENDS the episode (as in training)" if contact_cols else "a contact does NOT end the episode"),
+            flush=True,
+        )
 
     # --- rollout ---------------------------------------------------------------
     while len(episodes) < args_cli.episodes and simulation_app.is_running():
@@ -487,8 +703,12 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
         done = dones.bool()
         timeout = extras["time_outs"].bool()
-        # flag of the goal_reached termination of THIS step (it survives the automatic reset)
+        # flags of the termination terms of THIS step (they survive the automatic reset)
         goal_hit = term_mgr.get_term("goal_reached").bool()
+        flags = term_contact = None
+        if done.any():
+            flags = torch.stack([term_mgr.get_term(nm).bool() for nm in done_names], dim=1)
+            term_contact = flags[:, contact_cols].any(dim=1) if contact_cols else torch.zeros_like(done)
         alive = ~done
         zero = torch.zeros_like(x)
 
@@ -517,8 +737,27 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         if sc.midpoint_x is not None:
             reached_mid = reached_mid | (alive & (max_x >= sc.midpoint_x))
 
+        # one row per env and step for the time series. After a reset the state belongs to the next
+        # episode, so a terminating step only keeps the command and the contact flag of its termination.
+        force = _trunk_force(contact) if contact is not None else torch.zeros_like(x)
+        rec = torch.stack(
+            [lin_b[:, 0], lin_b[:, 1], ang_b[:, 2], cmd[:, 0], cmd[:, 1], cmd[:, 2], x, y,
+             torch.rad2deg(yaw_err), torch.rad2deg(tilt), power, force],
+            dim=1,
+        ).float().cpu().numpy()  # fmt: skip
+        done_np = done.cpu().numpy()
+        term_contact_np = term_contact.cpu().numpy() if term_contact is not None else None
+        for i in range(n):
+            row = np.full(len(SERIES_CHANNELS), np.nan)
+            if done_np[i]:
+                row[3:6] = rec[i, 3:6]
+                row[CONTACT_COL] = float(term_contact_np[i]) if term_contact_np is not None else 0.0
+            else:
+                row[:FORCE_COL + 1] = rec[i]
+                row[CONTACT_COL] = float(contact is not None and rec[i, FORCE_COL] > contact["threshold"])
+            rows[i].append(row)
+
         if done.any():
-            flags = torch.stack([term_mgr.get_term(nm).bool() for nm in done_names], dim=1)
             for i in done.nonzero().flatten().tolist():
                 success = bool(goal_hit[i])
                 best_x = max_x[i].item() if max_x[i].item() > _UNSET / 2 else sc.spawn_x
@@ -533,6 +772,10 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                 if mass is not None and progress > 0.5:
                     cot = energy / (float(mass[i]) * _GRAVITY * progress)
                 reasons = [nm for j, nm in enumerate(done_names) if bool(flags[i, j])]
+                series, contact_metrics = finalize_episode(rows[i], dt, rec_every_s)
+                rows[i] = []
+                if contact is None:
+                    contact_metrics = {key: None for key in CONTACT_KEYS}
                 ep = {
                     "seed": seed,
                     "success": success,
@@ -555,6 +798,9 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                     "total_reward": float(total_reward[i]),
                     "reward_terms_per_s": {nm: float(term_sums[i, j]) / duration for j, nm in enumerate(reward_names)},
                     "end_reason": "+".join(sorted(reasons)) if reasons else ("time_out" if timeout[i] else "unknown"),
+                    "command_speed_mps": sc.vx,
+                    **contact_metrics,
+                    "series": series,
                 }
                 episodes.append(ep)
                 verdict = "SUCCESS" if success else ("FELL" if ep["fell_before_goal"] else "TIMEOUT")
@@ -563,6 +809,7 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                     f"[{name}] episode {len(episodes)}/{args_cli.episodes}: {verdict:<8} "
                     f"time={duration:.1f}s progress={progress:.2f}m{mid} yaw_err={ep['max_yaw_err_deg']:.1f}deg "
                     f"lateral={ep['max_lateral_m']:.2f}m vel_err={ep['vel_err_xy_mps']:.2f}m/s "
+                    f"trunk_contacts={ep['trunk_contact_events'] if ep['trunk_contact_events'] is not None else '-'} "
                     f"reward={ep['total_reward']:.1f} end={ep['end_reason']}",
                     flush=True,
                 )
@@ -590,7 +837,21 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
     env.close()
     if not episodes:
         raise RuntimeError(f"Scenario '{name}': no episode finished (was the simulator window closed?).")
-    return {"description": sc.description, "summary": summarize(episodes), "episodes": episodes}
+    meta = {
+        **scenario_meta(sc),
+        "control_dt_s": dt,
+        "record_dt_s": episodes[0]["series"]["dt"],
+        "trunk_contact": None
+        if contact is None
+        else {
+            "sensor": contact["name"],
+            "bodies": contact["bodies"],
+            "threshold_n": contact["threshold"],
+            "terminates_episode": bool(contact_cols),
+            "merge_gap_s": CONTACT_MERGE_GAP_S,
+        },
+    }
+    return {"description": sc.description, "meta": meta, "summary": summarize(episodes), "episodes": episodes}
 
 
 def main():
@@ -620,7 +881,6 @@ def main():
 
     results = {name: run_scenario(name, seed, agent_cfg, resume_path)}
     results[name]["seeds"] = [seed]
-    print_tables(results)
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     out = args_cli.output or _default_report_path(resume_path, stamp)
@@ -634,8 +894,8 @@ def main():
         "scenarios": results,
     }
     with open(out, "w") as f:
-        json.dump(report, f, indent=2)
-    print(f"[INFO] Report saved to: {out}", flush=True)
+        json.dump(report, f)
+    print(f"[INFO] Run finished: {name}, seed {seed}.", flush=True)
 
 
 if __name__ == "__main__":

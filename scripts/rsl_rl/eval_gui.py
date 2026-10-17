@@ -68,12 +68,15 @@ DEFAULTS: dict = {
     "scenarios": [],
     "episodes": 5,
     "seeds": "42",
+    "speed": "",  # commanded forward speed in m/s; empty = the scenario's own (0.5)
     "checkpoint": "",
     "load_run": "",
     "output": "",
     "mode": "headless",
     "device": "",
     "extra_args": "",
+    "keep_going_after_contact": False,  # --no_contact_termination
+    "show_report": True,  # open the report viewer when the runs are finished (False: --no_report)
 }
 
 
@@ -101,6 +104,15 @@ def parse_episodes(value) -> int | None:
     return n if n >= 1 else None
 
 
+def parse_speed(value) -> float | None:
+    """Positive float, or None if the text is empty / not a positive number."""
+    try:
+        speed = float(str(value).strip())
+    except ValueError:
+        return None
+    return speed if speed > 0.0 else None
+
+
 def validate(cfg: dict) -> str | None:
     """Return an error message, or None if the configuration can be run."""
     if not cfg["task"].strip():
@@ -111,6 +123,8 @@ def validate(cfg: dict) -> str | None:
         return "Episodes per scenario must be an integer >= 1."
     if parse_seeds(cfg["seeds"]) is None:
         return "Seeds must be integers separated by commas, e.g. 42,43,44."
+    if str(cfg["speed"]).strip() and parse_speed(cfg["speed"]) is None:
+        return "Speed must be a positive number in m/s (or empty for the scenario default)."
     ckpt = cfg["checkpoint"].strip()
     if ckpt and not os.path.isfile(os.path.expanduser(ckpt)):
         return f"Checkpoint file not found:\n{ckpt}"
@@ -133,6 +147,12 @@ def build_argv(cfg: dict, order: list[str]) -> list[str]:
         "--episodes", str(parse_episodes(cfg["episodes"]) or cfg["episodes"]),
         "--eval_seed", ",".join(str(s) for s in (parse_seeds(cfg["seeds"]) or [])) or str(cfg["seeds"]),
     ]  # fmt: skip
+    if str(cfg["speed"]).strip():
+        argv += ["--speed", str(parse_speed(cfg["speed"]) or cfg["speed"]).strip()]
+    if cfg["keep_going_after_contact"]:
+        argv.append("--no_contact_termination")
+    if not cfg["show_report"]:
+        argv.append("--no_report")
     ckpt, run = cfg["checkpoint"].strip(), cfg["load_run"].strip()
     if ckpt:
         argv += ["--checkpoint", os.path.expanduser(ckpt)]
@@ -185,8 +205,10 @@ def read_config(path: str) -> dict:
         if key in raw:
             cfg[key] = raw[key]
     cfg["scenarios"] = [str(s) for s in cfg["scenarios"]]
-    for key in ("task", "seeds", "checkpoint", "load_run", "output", "device", "extra_args"):
+    for key in ("task", "seeds", "speed", "checkpoint", "load_run", "output", "device", "extra_args"):
         cfg[key] = str(cfg[key])
+    for key in ("keep_going_after_contact", "show_report"):
+        cfg[key] = bool(cfg[key])
     if cfg["mode"] not in MODES:
         cfg["mode"] = "headless"
     return cfg
@@ -226,8 +248,9 @@ class EvalGui:
         root.minsize(900, 520)
         root.protocol("WM_DELETE_WINDOW", self._cancel)
 
-        names = ("task", "episodes", "seeds", "checkpoint", "load_run", "output", "mode", "device", "extra_args", "filter")
+        names = ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "mode", "device", "extra_args", "filter")
         self.v = {k: tk.StringVar() for k in names}
+        self.b = {k: tk.BooleanVar() for k in ("keep_going_after_contact", "show_report")}
         self.desc_var = tk.StringVar()
         self.status_var = tk.StringVar()
         self.summary_var = tk.StringVar()
@@ -247,7 +270,7 @@ class EvalGui:
                 last = None
         self._apply_cfg(last or DEFAULTS, warn_unknown=False)
 
-        for var in self.v.values():
+        for var in [*self.v.values(), *self.b.values()]:
             var.trace_add("write", self._on_change)
         self._on_change()
 
@@ -302,12 +325,13 @@ class EvalGui:
             background=[("active", BG_ACTIVE)],
         )
         style.map("TSpinbox", background=[("active", BG_ACTIVE)])
-        style.configure("TRadiobutton", background=BG)
-        style.map(
-            "TRadiobutton",
-            background=[("active", BG)],
-            indicatorcolor=[("selected", ACCENT), ("!selected", FIELD)],
-        )
+        for widget in ("TRadiobutton", "TCheckbutton"):
+            style.configure(widget, background=BG)
+            style.map(
+                widget,
+                background=[("active", BG)],
+                indicatorcolor=[("selected", ACCENT), ("!selected", FIELD)],
+            )
         style.configure("TScrollbar", background=BG_BUTTON, troughcolor=BG, bordercolor=BORDER, arrowcolor=FG)
         style.map("TScrollbar", background=[("active", BG_ACTIVE)])
         style.configure("Hint.TLabel", foreground=FG_HINT)
@@ -419,6 +443,10 @@ class EvalGui:
         ttk.Entry(right, textvariable=self.v["seeds"]).grid(row=r, column=1, columnspan=2, sticky="ew", **pad)
         r += 2
 
+        label("Speed (m/s):", "commanded forward speed; empty = scenario default (0.5)")
+        ttk.Entry(right, textvariable=self.v["speed"], width=10).grid(row=r, column=1, sticky="w", **pad)
+        r += 2
+
         label("Checkpoint:", "empty: the load run or the latest model is used")
         ttk.Entry(right, textvariable=self.v["checkpoint"]).grid(row=r, column=1, sticky="ew", **pad)
         ttk.Button(right, text="Browse...", width=9, command=self._browse_checkpoint).grid(row=r, column=2, **pad)
@@ -439,6 +467,13 @@ class EvalGui:
         modes.grid(row=r, column=1, columnspan=2, sticky="w", **pad)
         ttk.Radiobutton(modes, text="Headless (no window, fast)", value="headless", variable=self.v["mode"]).pack(anchor="w")
         ttk.Radiobutton(modes, text="Real-time (simulator window)", value="realtime", variable=self.v["mode"]).pack(anchor="w")
+        r += 1
+
+        label("Options:")
+        opts = ttk.Frame(right)
+        opts.grid(row=r, column=1, columnspan=2, sticky="w", **pad)
+        ttk.Checkbutton(opts, text="Keep going after trunk contact (records every contact)", variable=self.b["keep_going_after_contact"]).pack(anchor="w")
+        ttk.Checkbutton(opts, text="Show the report windows when finished", variable=self.b["show_report"]).pack(anchor="w")
         r += 1
 
         label("Device:", "empty = default")
@@ -593,12 +628,15 @@ class EvalGui:
             "scenarios": scenarios,
             "episodes": v["episodes"].strip(),
             "seeds": v["seeds"].strip(),
+            "speed": v["speed"].strip(),
             "checkpoint": v["checkpoint"].strip(),
             "load_run": v["load_run"].strip(),
             "output": v["output"].strip(),
             "mode": v["mode"] or "headless",
             "device": v["device"].strip(),
             "extra_args": v["extra_args"].strip(),
+            "keep_going_after_contact": bool(self.b["keep_going_after_contact"].get()),
+            "show_report": bool(self.b["show_report"].get()),
         }
 
     def _apply_cfg(self, cfg: dict, warn_unknown: bool = True):
@@ -606,8 +644,10 @@ class EvalGui:
         wanted = [str(s) for s in cfg["scenarios"]]
         unknown = [s for s in wanted if self.order and s not in self.catalog["scenarios"]]
         self.selected = {s for s in wanted if s not in unknown}
-        for key in ("task", "episodes", "seeds", "checkpoint", "load_run", "output", "mode", "device", "extra_args"):
+        for key in ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "mode", "device", "extra_args"):
             self.v[key].set(str(cfg[key]))
+        for key in self.b:
+            self.b[key].set(bool(cfg[key]))
         self._apply_filter()
         self._on_change()
         if unknown and warn_unknown:

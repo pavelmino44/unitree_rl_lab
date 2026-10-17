@@ -36,6 +36,12 @@ parser.add_argument(
     default=None,
     help="Name of a fixed evaluation scenario from eval_scenarios.py (e.g. stairs_up_10cm).",
 )
+parser.add_argument(
+    "--speed",
+    type=float,
+    default=None,
+    help="Commanded forward speed in m/s for --eval_scenario (default: the scenario's own, 0.5).",
+)
 # append RSL-RL cli arguments
 cli_args.add_rsl_rl_args(parser)
 # append AppLauncher cli args
@@ -84,8 +90,8 @@ def main():
         entry_point_key=eval_entry_point,
     )
     if args_cli.eval_scenario:
-        sc = apply_eval_scenario(env_cfg, args_cli.eval_scenario)
-        print(f"[INFO] Eval scenario '{args_cli.eval_scenario}': {sc.description}")
+        sc = apply_eval_scenario(env_cfg, args_cli.eval_scenario, speed=args_cli.speed)
+        print(f"[INFO] Eval scenario '{args_cli.eval_scenario}' at {sc.vx} m/s: {sc.description}")
     agent_cfg: RslRlOnPolicyRunnerCfg = cli_args.parse_rsl_rl_cfg(args_cli.task, args_cli)
 
     # specify directory for logging experiments
