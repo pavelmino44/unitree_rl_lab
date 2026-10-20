@@ -8,11 +8,11 @@ started on its own on any saved report:
     python scripts/rsl_rl/eval_report.py report.json --save plots/ --no_show
 
 Windows (matplotlib):
-  * one window for the whole run: outcomes per scenario, success vs. stair height, speed tracking, trunk
+  * one window for the whole run: outcomes per scenario, success vs. stair height, speed tracking, body
     contacts and a numeric summary of the controller with its weakest scenarios;
   * one window per scenario: averages over all its episodes, aligned by position along the course;
   * one window per episode: the speed of the scenario (forward, backward, sideways or the turn rate) vs. time
-    with the commanded value, the trunk-contact timeline, progress, heading error / tilt / lateral deviation
+    with the commanded value, the body-contact timeline (base / head / legs), progress, heading error / tilt / lateral deviation
     and all numeric metrics of that episode; the sprint scenario also shows the stop command and the stop.
 
 This script does not need Isaac Sim, only numpy and matplotlib. Without a display it saves PNG files instead.
@@ -45,6 +45,14 @@ C_TILT = "#7a4fb0"
 C_LAT = "#1d9a9a"
 C_GRAY = "#6b7a8c"
 OUTCOME_COLORS = {"SUCCESS": C_OK, "FELL": C_FALL, "TIMEOUT": C_TIMEOUT}
+C_BASE = "#8e1f1f"  # body contacts: base (ends the episode), head, legs
+C_HEAD = C_CONTACT
+C_LEGS = "#e08a1e"
+CONTACT_LANES = (  # (label, key of the intervals, key of the event count, colour)
+    ("base", "base_contact_intervals_s", "base_contact_events", C_BASE),
+    ("head", "head_contact_intervals_s", "head_contact_events", C_HEAD),
+    ("legs", "leg_contact_intervals_s", "leg_contact_events", C_LEGS),
+)
 
 
 ##
@@ -130,6 +138,17 @@ def fmt_progress(value, meta: dict, none: str = "-") -> str:
     return fmt(value, ".2f", "m", none)
 
 
+def ints(value, none: str = "-") -> str:
+    return none if value is None else f"{value:.0f}"
+
+
+def contact_lanes(ep: dict) -> list[tuple]:
+    """Timeline lanes of an episode: base / head / legs, or a single "trunk" lane for older reports."""
+    if "base_contact_intervals_s" not in ep:
+        return [("trunk", ep.get("trunk_contact_intervals_s"), ep.get("trunk_contact_events"), C_CONTACT)]
+    return [(label, ep.get(iv), ep.get(cnt), colour) for label, iv, cnt, colour in CONTACT_LANES]
+
+
 def contact_threshold(meta: dict):
     tc = meta.get("trunk_contact")
     return None if not tc else tc.get("threshold_n")
@@ -150,7 +169,7 @@ def shade_obstacle_time(ax, t: np.ndarray, x: np.ndarray, half, dt: float):
 
 
 def style_axes(ax, title: str, ylabel: str = "", xlabel: str = "", subtitle: str = ""):
-    """Bold title; subtitle is an optional second line (legend hints) in smaller grey text below it."""
+    """Bold title; ``subtitle`` is an optional second line (legend hints) in smaller grey text below it."""
     if subtitle:
         ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c", pad=15 + 12 * subtitle.count("\n"))
         ax.text(0.0, 1.015, subtitle, transform=ax.transAxes, ha="left", va="bottom", fontsize=8, color=C_GRAY)
@@ -269,11 +288,15 @@ def episode_text(name: str, meta: dict, ep: dict, k: int, n: int) -> list[str]:
         kv("max heading error", "not held" if turn else fmt(ep.get("max_yaw_err_deg"), ".1f", "deg")),
         kv("max drift from start" if turn else "max lateral dev.", fmt(ep.get("max_lateral_m"), ".2f", "m")),
         "",
-        "TRUNK CONTACTS",
-        kv("events", fmt(ep.get("trunk_contact_events"), ".0f")),
-        kv("total contact time", fmt(ep.get("trunk_contact_time_s"), ".2f", "s")),
-        kv("first contact at", fmt(ep.get("first_trunk_contact_s"), ".2f", "s")),
-        kv("max force", fmt(ep.get("max_trunk_contact_force_n"), ".0f", "N")),
+        "BODY CONTACTS (events)",
+        kv("trunk (base + head)", ints(ep.get("trunk_contact_events"))),
+        kv("  head (nose)", ints(ep.get("head_contact_events"))),
+        kv("  base", ints(ep.get("base_contact_events"))),
+        kv("legs (not the feet)", ints(ep.get("leg_contact_events"))),
+        kv("trunk contact time", fmt(ep.get("trunk_contact_time_s"), ".2f", "s")),
+        kv("first trunk contact", fmt(ep.get("first_trunk_contact_s"), ".2f", "s")),
+        kv("max force trunk", fmt(ep.get("max_trunk_contact_force_n"), ".0f", "N")),
+        kv("max force legs", fmt(ep.get("max_leg_contact_force_n"), ".0f", "N")),
         "",
         *(
             [
@@ -343,7 +366,6 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
     x = num(series.get("x"))
     xf = forward_fill(x)
     vx, cmd_vx = primary_series(series, meta)
-    force, contact = num(series.get("contact_force_n")), num(series.get("contact"))
     t_end = float(t[-1])
 
     # --- speed ---
@@ -359,35 +381,28 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
     ax_v.set_ylim(min(0.0, np.nanmin(vx) if np.isfinite(vx).any() else 0.0), peak)
     ax_v.legend(loc="upper right", fontsize=8, ncol=2, framealpha=0.9)
 
-    # --- trunk contacts ---
-    intervals = ep.get("trunk_contact_intervals_s") or []
-    thr = contact_threshold(meta)
+    # --- body contacts: one lane per part (base / head / legs) ---
+    lanes = contact_lanes(ep)
     min_w = max(0.012 * t_end, 0.05)  # a 0.02 s contact must stay visible on a 30 s axis
-    for j, (a, b) in enumerate(intervals, 1):
-        b_vis = max(b, a + min_w)
-        ax_c.axvspan(a, b_vis, color=C_CONTACT, alpha=0.6, lw=0)
-        if len(intervals) <= 25:
-            ax_c.text(0.5 * (a + b_vis), 0.97, str(j), transform=ax_c.get_xaxis_transform(), ha="center", va="top",
-                      fontsize=7.5, fontweight="bold", color="#8e1f1f")  # fmt: skip
-    if np.isfinite(force).any():
-        ax_c.plot(t, np.nan_to_num(force, nan=0.0), color="#8e1f1f", lw=1.1, drawstyle="steps-mid")
-    if thr:
-        ax_c.axhline(thr, color=C_GRAY, lw=0.9, ls="--")
-    style_axes(ax_c, "Trunk contacts (red = trunk touches the surface)", "force, N")
-    events = ep.get("trunk_contact_events")
-    if events is None:
-        msg, colour = "trunk contact sensor not available", C_GRAY
-    elif events == 0:
-        msg, colour = "no trunk contact", C_OK
-    else:
-        msg = f"{events} event(s), {fmt(ep.get('trunk_contact_time_s'), '.2f', 's')} in contact"
-        colour = C_CONTACT
-    ax_c.text(0.005, 0.93, msg, transform=ax_c.transAxes, ha="left", va="top", color=colour, fontsize=9, fontweight="bold")
-    ax_c.set_ylim(bottom=0)
-    ymax = np.nanmax(force) if np.isfinite(force).any() else 0.0
-    ax_c.set_ylim(0, max(ymax * 1.15, (thr or 1.0) * 2.0))
-    if contact.size and not intervals and events:
-        pass  # intervals missing in an old report
+    labels = []
+    for row, (part, intervals, count, colour) in enumerate(lanes):
+        labels.append(f"{part} ({ints(count, '-')})")
+        if count is None:
+            ax_c.text(0.01 * t_end, row, "not recorded", va="center", ha="left", fontsize=7.5, color=C_GRAY)
+            continue
+        spans = [(a, max(b - a, min_w)) for a, b in (intervals or [])]
+        if spans:
+            ax_c.broken_barh(spans, (row - 0.32, 0.64), facecolors=colour, edgecolors="none")
+    ax_c.set_yticks(range(len(lanes)))
+    ax_c.set_yticklabels(labels, fontsize=8)
+    ax_c.set_ylim(len(lanes) - 0.5, -0.5)
+    ax_c.grid(True, axis="x", alpha=0.3)
+    ax_c.grid(False, axis="y")
+    total = sum(c or 0 for _, _, c, _ in lanes)
+    tc = meta.get("trunk_contact") or {}
+    ends = "a base contact ends the episode" if tc.get("terminates_episode", True) else "contacts do not end the episode"
+    style_axes(ax_c, "Body contacts", "",
+               subtitle=("no contact" if total == 0 else "bars = the part touches the surface") + f"; {ends}")  # fmt: skip
 
     # --- progress ---
     if half is not None:
@@ -456,7 +471,7 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
 def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=None, xkey: str = "x"):
     """Mean, std (over episodes), max (over samples) and number of episodes per bin of a channel.
 
-    The bins are along xkey: "x" = position along the course (or rotation), "t" = time since the episode start.
+    The bins are along ``xkey``: "x" = position along the course (or rotation), "t" = time since the episode start.
 
     Every episode is averaged inside each bin first, so that an episode that spends a long time at one place
     (e.g. a robot that got stuck) does not outweigh the others.
@@ -489,14 +504,16 @@ def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=
         return np.nanmean(m, axis=0), np.nanstd(m, axis=0), np.nanmax(mxs, axis=0), np.isfinite(m).sum(axis=0)
 
 
-def contact_by_position(episodes: list[dict], edges: np.ndarray, xkey: str = "x") -> np.ndarray:
-    """Share (0..1) of the episodes that had a trunk contact in each bin (among those that were there)."""
+def contact_by_position(episodes: list[dict], edges: np.ndarray, xkey: str = "x", key: str = "contact") -> np.ndarray:
+    """Share (0..1) of the episodes with a contact (channel ``key``) in each bin (among those that were there)."""
     nb = len(edges) - 1
     visited, touched = np.zeros(nb), np.zeros(nb)
     for ep in episodes:
         s = ep.get("series") or {}
         x = forward_fill(num(s.get(xkey)))
-        c = num(s.get("contact")) > 0.5
+        c = num(s.get(key)) > 0.5
+        if c.size != x.size:  # channel missing (older report)
+            continue
         if not x.size:
             continue
         ok = np.isfinite(x)
@@ -564,11 +581,14 @@ def scenario_text(name: str, meta: dict, sc: dict) -> list[str]:
             if sprint
             else []
         ),
-        "TRUNK CONTACTS",
-        kv("episodes with contact", pct(s.get("trunk_contact_episode_rate"))),
-        kv("events per episode", fmt(s.get("mean_trunk_contacts_per_episode"), ".2f")),
-        kv("contact time / ep", fmt(s.get("mean_trunk_contact_time_s"), ".2f", "s")),
-        kv("worst force", fmt(s.get("worst_trunk_contact_force_n"), ".0f", "N")),
+        "BODY CONTACTS (events / episode)",
+        kv("trunk (base + head)", fmt(s.get("mean_trunk_contacts_per_episode"), ".2f")),
+        kv("  head (nose)", fmt(s.get("mean_head_contacts_per_episode"), ".2f")),
+        kv("  base", fmt(s.get("mean_base_contacts_per_episode"), ".2f")),
+        kv("legs (hip/thigh/calf)", fmt(s.get("mean_leg_contacts_per_episode"), ".2f")),
+        kv("episodes w/ trunk cont.", pct(s.get("trunk_contact_episode_rate"))),
+        kv("episodes w/ leg cont.", pct(s.get("leg_contact_episode_rate"))),
+        kv("trunk contact time/ep", fmt(s.get("mean_trunk_contact_time_s"), ".2f", "s")),
         "",
         "STABILITY / EFFORT",
         kv("tilt mean / worst", f"{fmt(s.get('mean_tilt_deg'), '.1f')} / {fmt(s.get('worst_max_tilt_deg'), '.1f')} deg"),
@@ -725,14 +745,23 @@ def scenario_figure(plt, name: str, sc: dict):
 
     # --- contacts by position ---
     frac = contact_by_position(eps, edges, xkey)
+    has_legs = any("leg_contact" in (e.get("series") or {}) for e in eps)
     course_marks(ax_ct)
-    ax_ct.bar(centers, 100.0 * np.nan_to_num(frac, nan=0.0), width=bw * 0.92, color=C_CONTACT)
+    w_bar = bw * (0.45 if has_legs else 0.92)
+    ax_ct.bar(centers - (w_bar / 2 if has_legs else 0.0), 100.0 * np.nan_to_num(frac, nan=0.0), width=w_bar, color=C_CONTACT)
+    if has_legs:
+        frac_legs = contact_by_position(eps, edges, xkey, key="leg_contact")
+        ax_ct.bar(centers + w_bar / 2, 100.0 * np.nan_to_num(frac_legs, nan=0.0), width=w_bar, color=C_LEGS)
     ax_ct.set_ylim(0, 105)
-    total_events = sum(e.get("trunk_contact_events") or 0 for e in eps)
-    style_axes(ax_ct, "When the trunk touched the surface" if time_aligned else "Where the trunk touched the surface", "% of episodes",
-               subtitle="share of the episodes with a trunk contact at this " + ("time" if time_aligned else ("angle" if turn else "place")))  # fmt: skip
-    ax_ct.text(0.99, 0.95, f"{total_events} contact event(s) in {episodes_txt}", transform=ax_ct.transAxes, ha="right", va="top",
-               color=C_CONTACT if total_events else C_OK, fontsize=9, fontweight="bold")  # fmt: skip
+    total_trunk = sum(e.get("trunk_contact_events") or 0 for e in eps)
+    total_legs = sum(e.get("leg_contact_events") or 0 for e in eps)
+    where = "time" if time_aligned else ("angle" if turn else "place")
+    style_axes(ax_ct, ("When" if time_aligned else "Where") + " the body touched the surface", "% of episodes",
+               subtitle=f"share of the episodes with a contact at this {where}: red = trunk (base or head)"
+               + (", orange = legs" if has_legs else ""))  # fmt: skip
+    summary_txt = f"trunk {total_trunk}" + (f", legs {total_legs}" if has_legs else "") + f" contact event(s) in {episodes_txt}"
+    ax_ct.text(0.99, 0.95, summary_txt, transform=ax_ct.transAxes, ha="right", va="top",
+               color=C_CONTACT if (total_trunk or total_legs) else C_OK, fontsize=9, fontweight="bold")  # fmt: skip
     plt.setp(ax_ct.get_xticklabels(), visible=False)
 
     # --- heading error / lateral deviation by position ---
@@ -867,10 +896,11 @@ def overall_text(report: dict, scenarios: dict) -> list[str]:
         kv("heading err mean/worst", f"{fmt(mean_of(eps, 'max_yaw_err_deg'), '.1f')} / {fmt(worst_of(eps, 'max_yaw_err_deg'), '.1f')} deg"),
         kv("lateral mean/worst", f"{fmt(mean_of(eps, 'max_lateral_m'), '.2f')} / {fmt(worst_of(eps, 'max_lateral_m'), '.2f')} m"),
         "",
-        "TRUNK CONTACTS",
-        kv("episodes with contact", pct(sum(e["trunk_contact_events"] > 0 for e in contact_eps) / len(contact_eps) if contact_eps else None)),
-        kv("events per episode", fmt(mean_of(eps, "trunk_contact_events"), ".2f")),
-        kv("contact time / ep.", fmt(mean_of(eps, "trunk_contact_time_s"), ".2f", "s")),
+        "BODY CONTACTS (events / ep.)",
+        kv("trunk (base + head)", fmt(mean_of(eps, "trunk_contact_events"), ".2f")),
+        kv("  head (nose)", fmt(mean_of(eps, "head_contact_events"), ".2f")),
+        kv("legs (hip/thigh/calf)", fmt(mean_of(eps, "leg_contact_events"), ".2f")),
+        kv("ep. with trunk contact", pct(sum(e["trunk_contact_events"] > 0 for e in contact_eps) / len(contact_eps) if contact_eps else None)),
         "",
         "STABILITY / EFFORT",
         kv("tilt mean/worst", f"{fmt(mean_of(eps, 'mean_tilt_deg'), '.1f')} / {fmt(worst_of(eps, 'max_tilt_deg'), '.1f')} deg"),
@@ -911,7 +941,7 @@ def overall_text(report: dict, scenarios: dict) -> list[str]:
 
 
 def overall_figure(plt, report: dict, scenarios: dict):
-    """Columns: outcomes | speed tracking | trunk contacts (one row per scenario, full height), then the
+    """Columns: outcomes | speed tracking | body contacts (one row per scenario, full height), then the
     capability sweeps (or the milestone) and the text panel."""
     names = list(scenarios)
     nS = len(names)
@@ -998,16 +1028,22 @@ def overall_figure(plt, report: dict, scenarios: dict):
     scenario_axis(ax_trk, False)
     style_axes(ax_trk, "Speed tracking", "", "% of the commanded speed", subtitle="mean speed / command;\nerr = velocity error, m/s")
 
-    # --- trunk contacts ---
+    # --- body contacts: trunk (upper bar) and legs (lower bar) per scenario ---
     events = [s_.get("mean_trunk_contacts_per_episode") for s_ in S]
+    legs = [s_.get("mean_leg_contacts_per_episode") for s_ in S]
     rate = [s_.get("trunk_contact_episode_rate") for s_ in S]
-    ax_cnt.barh(y, [e or 0.0 for e in events], color=C_CONTACT, height=0.72)
+    has_legs = any(v is not None for v in legs)
+    h = 0.36 if has_legs else 0.72
+    ax_cnt.barh(y - (h / 2 if has_legs else 0.0), [e or 0.0 for e in events], color=C_CONTACT, height=h)
+    if has_legs:
+        ax_cnt.barh(y + h / 2, [v or 0.0 for v in legs], color=C_LEGS, height=h)
     for yi, e, r in zip(y, events, rate):
         if e is not None and e > 0:
-            ax_cnt.text(e, yi, f" {pct(r)}", va="center", ha="left", fontsize=fs - 1, color="#333333")
+            ax_cnt.text(e, yi - (h / 2 if has_legs else 0.0), f" {pct(r)}", va="center", ha="left", fontsize=fs - 1, color="#333333")
     scenario_axis(ax_cnt, False)
-    style_axes(ax_cnt, "Trunk contacts", "", "events per episode", subtitle="% = share of the episodes\nwith a contact")
-    ax_cnt.set_xlim(0, max(1.0, max([e or 0.0 for e in events] + [0.0])) * 1.45)
+    style_axes(ax_cnt, "Body contacts", "", "events per episode",
+               subtitle="red = trunk (base + head), orange = legs;\n% = episodes with a trunk contact")  # fmt: skip
+    ax_cnt.set_xlim(0, max(1.0, max([e or 0.0 for e in events] + [v or 0.0 for v in legs] + [0.0])) * 1.45)
 
     # --- right column: capability sweeps (stairs height, slope angle, block difficulty) or the milestone ---
     if sweeps:

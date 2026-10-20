@@ -29,8 +29,8 @@ Examples:
 --eval_seed accepts a comma-separated list. The seed controls the terrain realization of the randomized
 obstacles (boxes, random_rough); episodes of all seeds of a scenario are pooled in the summary.
 --speed sets the commanded forward speed in m/s (default: 0.5, the value built into the scenarios).
---no_contact_termination removes the training termination on trunk contact, so that the whole episode is
-observed and every trunk contact can be shown on the timeline (by default one contact ends the episode,
+--no_contact_termination removes the training termination on base contact, so that the whole episode is
+observed and every base contact can be shown on the timeline (by default one base contact ends the episode,
 exactly as in training).
 
 Scenario kinds (see eval_scenarios.py): walking along a course (forward, backward, sideways, obstacles),
@@ -54,12 +54,17 @@ Metrics (per scenario, over all pooled episodes)
   Efficiency:  mean_power_w (sum |torque * joint_vel|), cost_of_transport (E / (m g d))
   Smoothness:  action_rate (|a_t - a_t-1|), joint_acc (|qdd|)
   Stability:   tilt_deg (angle between base z-axis and gravity: mean and max)
-  Trunk contact: events (contacts closer than 0.1 s count as one), contact time, first contact, max force;
-               "trunk" = the bodies and force threshold of the training termination (e.g. base_contact)
+  Body contacts: contacts of the robot's body with the surroundings, by part:
+                 base  = the body(ies) of the training termination (base_contact) - ends the episode
+                 head  = Head_*                  - penalized in training (undesired_contacts), does NOT end it
+                 legs  = *_hip, *_thigh, *_calf  - penalized in training (undesired_contacts), does NOT end it
+               trunk = base or head (the "body" of the dog). For the trunk and the legs: events (contacts closer
+               than 0.1 s count as one), contact time, first contact, max force; per-part event counts and
+               time intervals for the timeline. Threshold: the force threshold of the training termination.
   Sprint/brake (flat_max_speed): peak_speed, time to 90 % of the command, speed at the stop command,
                stop time (speed < 0.1 m/s for 0.5 s), stop distance and the largest roll-back after it
   Time series: every episode stores a down-sampled (--record_dt, default 0.1 s) time series of the speed,
-               command, position, heading error, tilt, power and trunk contact for the report viewer
+               command, position, heading error, tilt, power and the body contacts (per part) for the report viewer
   Training-like: total_reward per episode, reward_terms_per_s (each reward term averaged per second, the
                same quantity as Episode_Reward/<term> in the training logs for a full-length episode),
                end_reasons (which termination terms ended the episode)
@@ -106,21 +111,34 @@ SERIES_CHANNELS = (
     "cmd_vx", "cmd_vy", "cmd_wz",  # commanded velocity
     "x", "y",  # position relative to the terrain tile centre (m)
     "yaw_err_deg", "tilt_deg", "power_w",
-    "contact_force_n",  # largest trunk contact force during the step (N)
-    "contact",  # 1 while the trunk is in contact
+    "contact_force_n",  # largest trunk (base or head) contact force during the step (N)
+    "leg_force_n",  # largest leg (hip / thigh / calf) contact force during the step (N)
+    "contact",  # 1 while the trunk (base or head) is in contact
+    "base_contact", "head_contact", "leg_contact",  # 1 while that part is in contact
 )  # fmt: skip
-CONTACT_COL, FORCE_COL = SERIES_CHANNELS.index("contact"), SERIES_CHANNELS.index("contact_force_n")
+N_KIN = SERIES_CHANNELS.index("contact_force_n")  # the first N_KIN channels are kinematics
+FORCE_COL, LEG_FORCE_COL = SERIES_CHANNELS.index("contact_force_n"), SERIES_CHANNELS.index("leg_force_n")
+CONTACT_COL = SERIES_CHANNELS.index("contact")
+BASE_COL, HEAD_COL, LEG_COL = (SERIES_CHANNELS.index(c) for c in ("base_contact", "head_contact", "leg_contact"))
+MAX_POOLED = [FORCE_COL, LEG_FORCE_COL, CONTACT_COL, BASE_COL, HEAD_COL, LEG_COL]  # never averaged away
 X_COL = SERIES_CHANNELS.index("x")
-CONTACT_MERGE_GAP_S = 0.1  # trunk contacts closer than this count as one event
+CONTACT_MERGE_GAP_S = 0.1  # contacts closer than this count as one event
 STOP_SPEED_MPS, STOP_HOLD_S = 0.1, 0.5  # "stopped" = |speed| below this for this long
 SPRINT_KEYS = (
     "peak_speed_mps", "time_to_90pct_s", "speed_at_brake_mps", "stop_time_s", "stop_distance_m",
     "min_speed_after_brake_mps",
 )  # fmt: skip
-CONTACT_KEYS = (
+TRUNK_KEYS = (
     "trunk_contact_events", "trunk_contact_time_s", "first_trunk_contact_s",
     "max_trunk_contact_force_n", "trunk_contact_intervals_s",
+    "base_contact_events", "base_contact_intervals_s",
 )  # fmt: skip
+HEAD_KEYS = ("head_contact_events", "head_contact_intervals_s")
+LEG_KEYS = (
+    "leg_contact_events", "leg_contact_time_s", "first_leg_contact_s", "max_leg_contact_force_n",
+    "leg_contact_intervals_s",
+)  # fmt: skip
+CONTACT_KEYS = TRUNK_KEYS + HEAD_KEYS + LEG_KEYS
 
 
 def _runs(mask: np.ndarray) -> list[tuple[int, int]]:
@@ -186,24 +204,44 @@ def finalize_episode(
 ) -> tuple[dict, dict]:
     """Turn the per-step rows of one finished episode into (time series for the report, metrics).
 
-    The metrics are the trunk-contact metrics and, if brake_time_s is given (sprint with a sudden stop),
-    the sprint/brake metrics.
+    The metrics are the body-contact metrics (trunk = base or head, per part, legs) and, if brake_time_s
+    is given (sprint with a sudden stop), the sprint/brake metrics.
 
-    The series is down-sampled to record_dt: block means, except the contact force and the contact flag,
-    which use the block maximum so that a short contact is never lost. The contact metrics are computed
-    from the full-rate data.
+    The series is down-sampled to record_dt: block means, except the contact forces and flags, which use
+    the block maximum so that a short contact is never lost. The contact metrics are computed from the
+    full-rate data.
     """
     arr = np.asarray(rows, dtype=np.float64).reshape(len(rows), len(SERIES_CHANNELS))
     steps = len(arr)
-    contact = arr[:, CONTACT_COL] > 0.5
-    intervals = contact_intervals(contact, dt)
-    force = arr[contact & np.isfinite(arr[:, FORCE_COL]), FORCE_COL]
+
+    def rounded(intervals):
+        return [[round(a, 3), round(b, 3)] for a, b in intervals]
+
+    def group(flag_col: int, force_col: int | None):
+        flag = arr[:, flag_col] > 0.5
+        intervals = contact_intervals(flag, dt)
+        force = arr[flag & np.isfinite(arr[:, force_col]), force_col] if force_col is not None else np.empty(0)
+        return flag, intervals, force
+
+    trunk, trunk_iv, trunk_f = group(CONTACT_COL, FORCE_COL)
+    legs, leg_iv, leg_f = group(LEG_COL, LEG_FORCE_COL)
+    _, base_iv, _ = group(BASE_COL, None)
+    _, head_iv, _ = group(HEAD_COL, None)
     metrics = {
-        "trunk_contact_events": len(intervals),
-        "trunk_contact_time_s": float(contact.sum() * dt),
-        "first_trunk_contact_s": round(intervals[0][0], 3) if intervals else None,
-        "max_trunk_contact_force_n": float(force.max()) if force.size else None,
-        "trunk_contact_intervals_s": [[round(a, 3), round(b, 3)] for a, b in intervals],
+        "trunk_contact_events": len(trunk_iv),
+        "trunk_contact_time_s": float(trunk.sum() * dt),
+        "first_trunk_contact_s": round(trunk_iv[0][0], 3) if trunk_iv else None,
+        "max_trunk_contact_force_n": float(trunk_f.max()) if trunk_f.size else None,
+        "trunk_contact_intervals_s": rounded(trunk_iv),
+        "base_contact_events": len(base_iv),
+        "base_contact_intervals_s": rounded(base_iv),
+        "head_contact_events": len(head_iv),
+        "head_contact_intervals_s": rounded(head_iv),
+        "leg_contact_events": len(leg_iv),
+        "leg_contact_time_s": float(legs.sum() * dt),
+        "first_leg_contact_s": round(leg_iv[0][0], 3) if leg_iv else None,
+        "max_leg_contact_force_n": float(leg_f.max()) if leg_f.size else None,
+        "leg_contact_intervals_s": rounded(leg_iv),
     }
     if brake_time_s is not None and v_cmd:
         metrics.update(sprint_metrics(arr, dt, brake_time_s, v_cmd))
@@ -217,7 +255,7 @@ def finalize_episode(
         warnings.simplefilter("ignore")  # blocks without valid data
         reduced = np.nanmean(grouped, axis=1)
         biggest = np.nanmax(grouped, axis=1)
-    reduced[:, [FORCE_COL, CONTACT_COL]] = biggest[:, [FORCE_COL, CONTACT_COL]]
+    reduced[:, MAX_POOLED] = biggest[:, MAX_POOLED]
     times = np.minimum((np.arange(blocks) + 1) * k, steps) * dt
     series = {"dt": round(k * dt, 4), "t": _jsonable(times, 3)}
     for name, column in zip(SERIES_CHANNELS, reduced.T):
@@ -240,6 +278,11 @@ def summarize(episodes: list[dict]) -> dict:
     def worst_of(key):
         vals = [e[key] for e in episodes if e.get(key) is not None]
         return max(vals) if vals else None
+
+    def rate_of(key):
+        """Share of the episodes with at least one event (None if not measured)."""
+        known = [e[key] for e in episodes if e.get(key) is not None]
+        return sum(v > 0 for v in known) / len(known) if known else None
 
     term_keys = sorted({k for e in episodes for k in e.get("reward_terms_per_s", {})})
     return {
@@ -269,15 +312,18 @@ def summarize(episodes: list[dict]) -> dict:
         # stability
         "mean_tilt_deg": mean_of("mean_tilt_deg"),
         "worst_max_tilt_deg": worst_of("max_tilt_deg"),
-        # trunk contacts (None if the contact sensor was not found)
+        # body contacts (None if not measured): trunk = base or head, and the legs
         "mean_trunk_contacts_per_episode": mean_of("trunk_contact_events"),
-        "trunk_contact_episode_rate": (
-            sum(e["trunk_contact_events"] > 0 for e in episodes if e.get("trunk_contact_events") is not None)
-            / max(1, sum(e.get("trunk_contact_events") is not None for e in episodes))
-            if any(e.get("trunk_contact_events") is not None for e in episodes) else None
-        ),
+        "trunk_contact_episode_rate": rate_of("trunk_contact_events"),
         "mean_trunk_contact_time_s": mean_of("trunk_contact_time_s"),
         "worst_trunk_contact_force_n": worst_of("max_trunk_contact_force_n"),
+        "mean_base_contacts_per_episode": mean_of("base_contact_events"),
+        "mean_head_contacts_per_episode": mean_of("head_contact_events"),
+        "head_contact_episode_rate": rate_of("head_contact_events"),
+        "mean_leg_contacts_per_episode": mean_of("leg_contact_events"),
+        "leg_contact_episode_rate": rate_of("leg_contact_events"),
+        "mean_leg_contact_time_s": mean_of("leg_contact_time_s"),
+        "worst_leg_contact_force_n": worst_of("max_leg_contact_force_n"),
         # sprint with a sudden stop (None for the other scenarios)
         "mean_peak_speed_mps": mean_of("peak_speed_mps"),
         "mean_time_to_90pct_s": mean_of("time_to_90pct_s"),
@@ -331,13 +377,14 @@ def print_tables(results: dict):
     print("yaw err / lateral: worst case over episodes (turn on the spot: lateral = drift from the start point)")
 
     # --- table 2: motion quality ---------------------------------------------------------------
-    line = "=" * (w + 123)
+    line = "=" * (w + 139)
     print("\n" + line)
     print(
         f"{'scenario':<{w}}{'vel err xy':>11}{'vel err yaw':>12}{'speed':>8}{'power, W':>10}{'CoT':>7}"
-        f"{'act. rate':>11}{'joint acc':>11}{'tilt max':>10}{'reward':>9}{'contacts/ep':>13}{'w/ contact':>11}"
+        f"{'act. rate':>11}{'joint acc':>11}{'tilt max':>10}{'reward':>9}{'trunk/ep':>10}{'head/ep':>9}"
+        f"{'w/ trunk':>10}{'legs/ep':>9}{'w/ legs':>9}"
     )
-    print("-" * (w + 123))
+    print("-" * (w + 139))
     for name, r in results.items():
         s = r["summary"]
         print(
@@ -345,12 +392,14 @@ def print_tables(results: dict):
             f"{_f(s['mean_forward_speed_mps'], '.2f'):>8}{_f(s['mean_power_w'], '.0f'):>10}"
             f"{_f(s['mean_cost_of_transport'], '.2f'):>7}{_f(s['mean_action_rate'], '.2f'):>11}"
             f"{_f(s['mean_joint_acc'], '.0f'):>11}{_f(s['worst_max_tilt_deg'], '.0f'):>10}"
-            f"{_f(s['mean_total_reward'], '.1f'):>9}{_f(s['mean_trunk_contacts_per_episode'], '.2f'):>13}"
-            f"{_f(s['trunk_contact_episode_rate'], '.0%'):>11}"
+            f"{_f(s['mean_total_reward'], '.1f'):>9}{_f(s['mean_trunk_contacts_per_episode'], '.2f'):>10}"
+            f"{_f(s.get('mean_head_contacts_per_episode'), '.2f'):>9}{_f(s['trunk_contact_episode_rate'], '.0%'):>10}"
+            f"{_f(s.get('mean_leg_contacts_per_episode'), '.2f'):>9}{_f(s.get('leg_contact_episode_rate'), '.0%'):>9}"
         )
     print(line)
     print("vel err: m/s and rad/s | speed: along the commanded direction (m/s) | tilt max: deg, worst case | reward: mean sum per episode")
-    print("contacts/ep: trunk contact events per episode | w/ contact: share of episodes with a trunk contact")
+    print("trunk = base or head | head/ep: head contacts (the nose hitting a step) | legs = hip, thigh, calf (not the feet)")
+    print("x/ep: contact events per episode | w/ x: share of the episodes with at least one such contact")
 
     # --- sprint with a sudden stop ----------------------------------------------------------------
     sprint = {k: r for k, r in results.items() if r["summary"].get("mean_peak_speed_mps") is not None}
@@ -655,26 +704,64 @@ _UNSET = -1.0e9
 _GRAVITY = 9.81
 
 
-def _setup_trunk_contact(scene, terms: list[dict]) -> dict | None:
-    """Resolve the definition of "trunk contact": the sensor, body ids and force threshold of the training
-    termination (e.g. base_contact). Falls back to the "base" body of the "contact_forces" sensor."""
+# Parts of the robot's body whose contacts are recorded, besides the base (which comes from the training
+# termination). The patterns match the Go2 bodies; a pattern that matches nothing is skipped.
+CONTACT_PARTS = {
+    "head": ["Head_.*"],
+    "legs": [".*_hip", ".*_thigh", ".*_calf"],
+}
+
+
+def _find_bodies(sensor, patterns) -> tuple[list[int], list[str]]:
+    """Bodies of the contact sensor matching any of the patterns (each pattern on its own: no error on a miss)."""
+    ids, names = [], []
+    for pattern in [patterns] if isinstance(patterns, str) else list(patterns):
+        try:
+            found_ids, found_names = sensor.find_bodies(pattern)
+        except (ValueError, RuntimeError):
+            continue
+        for i, nm in zip(found_ids, found_names):
+            if i not in ids:
+                ids.append(int(i))
+                names.append(nm)
+    return ids, names
+
+
+def _setup_contacts(scene, terms: list[dict]) -> dict | None:
+    """Resolve the body parts whose contacts are recorded.
+
+    base: the sensor, bodies and force threshold of the training termination (e.g. base_contact; fallback: the
+    "base" body of the "contact_forces" sensor). head / legs: CONTACT_PARTS on the same sensor, same threshold.
+    """
     spec = terms[0] if terms else {"sensor": "contact_forces", "body_names": "base", "threshold": 1.0}
     if spec["sensor"] not in scene.sensors:
         return None
     sensor = scene.sensors[spec["sensor"]]
-    ids, names = sensor.find_bodies(spec["body_names"] or "base")
-    if len(ids) == 0:
+    base_ids, base_names = _find_bodies(sensor, spec["body_names"] or "base")
+    if not base_ids:
         return None
-    return {"sensor": sensor, "name": spec["sensor"], "ids": list(ids), "bodies": list(names), "threshold": spec["threshold"]}
+    parts = {"base": {"ids": base_ids, "bodies": base_names}}
+    for part, patterns in CONTACT_PARTS.items():
+        ids, names = _find_bodies(sensor, patterns)
+        keep = [(i, nm) for i, nm in zip(ids, names) if i not in base_ids]
+        parts[part] = {"ids": [i for i, _ in keep], "bodies": [nm for _, nm in keep]}
+    return {"sensor": sensor, "name": spec["sensor"], "threshold": spec["threshold"], "parts": parts}
 
 
-def _trunk_force(contact: dict) -> torch.Tensor:
-    """Largest trunk contact force (N) over the last physics steps, same measure as the training termination."""
+def _part_forces(contact: dict) -> dict:
+    """Largest contact force (N) of every part over the last physics steps (the measure of the training terms)."""
     data = contact["sensor"].data
     history = data.net_forces_w_history
     if history is None:
         history = data.net_forces_w.unsqueeze(1)
-    return torch.norm(history[:, :, contact["ids"]], dim=-1).amax(dim=(1, 2))
+    magnitude = torch.norm(history, dim=-1).amax(dim=1)  # (num_envs, num_bodies)
+    out = {}
+    for part, p in contact["parts"].items():
+        if p["ids"]:
+            out[part] = magnitude[:, p["ids"]].amax(dim=1)
+        else:
+            out[part] = torch.zeros(magnitude.shape[0], device=magnitude.device)
+    return out
 
 
 def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
@@ -722,7 +809,7 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
     reward_names = list(rew_mgr.active_terms)
     done_names = list(term_mgr.active_terms)
-    contact = _setup_trunk_contact(unwrapped.scene, contact_terms)
+    contact = _setup_contacts(unwrapped.scene, contact_terms)
     contact_cols = [done_names.index(t["term"]) for t in contact_terms if t["term"] in done_names]
     rec_every_s = args_cli.record_dt
     rows: list[list] = [[] for _ in range(n)]  # per-step rows of the running episodes (see SERIES_CHANNELS)
@@ -784,14 +871,18 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         flush=True,
     )
     if contact is None:
-        print(f"[WARN] [{name}] trunk contact sensor not found: trunk contact metrics are disabled.", flush=True)
+        print(f"[WARN] [{name}] contact sensor not found: body contact metrics are disabled.", flush=True)
     else:
+        parts = contact["parts"]
+        print(f"[INFO] [{name}] body contacts: sensor '{contact['name']}', > {contact['threshold']} N", flush=True)
         print(
-            f"[INFO] [{name}] trunk contact = sensor '{contact['name']}', bodies {contact['bodies']}, "
-            f"> {contact['threshold']} N; "
-            + ("a contact ENDS the episode (as in training)" if contact_cols else "a contact does NOT end the episode"),
+            f"[INFO] [{name}]   base {parts['base']['bodies']}: "
+            + ("ENDS the episode (as in training)" if contact_cols else "does NOT end the episode"),
             flush=True,
         )
+        for part in CONTACT_PARTS:
+            bodies = parts[part]["bodies"]
+            print(f"[INFO] [{name}]   {part} {bodies if bodies else '(no matching bodies: not recorded)'}", flush=True)
 
     # --- rollout ---------------------------------------------------------------
     while len(episodes) < args_cli.episodes and simulation_app.is_running():
@@ -875,22 +966,32 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
         # one row per env and step for the time series. After a reset the state belongs to the next
         # episode, so a terminating step only keeps the command and the contact flag of its termination.
-        force = _trunk_force(contact) if contact is not None else torch.zeros_like(x)
-        rec = torch.stack(
+        kin = torch.stack(
             [lin_b[:, 0], lin_b[:, 1], ang_b[:, 2], cmd[:, 0], cmd[:, 1], cmd[:, 2], x, y,
-             torch.rad2deg(yaw_err), torch.rad2deg(tilt), power, force],
+             torch.rad2deg(yaw_err), torch.rad2deg(tilt), power],
             dim=1,
         ).float().cpu().numpy()  # fmt: skip
+        if contact is not None:
+            pf = {k: v.float().cpu().numpy() for k, v in _part_forces(contact).items()}
+        else:
+            pf = {k: np.zeros(n) for k in ("base", *CONTACT_PARTS)}
+        thr = contact["threshold"] if contact is not None else float("inf")
         done_np = done.cpu().numpy()
         term_contact_np = term_contact.cpu().numpy() if term_contact is not None else None
         for i in range(n):
             row = np.full(len(SERIES_CHANNELS), np.nan)
             if done_np[i]:
-                row[3:6] = rec[i, 3:6]
-                row[CONTACT_COL] = float(term_contact_np[i]) if term_contact_np is not None else 0.0
+                # the sensor is already reset: only the base termination flag is known for this step
+                row[3:6] = kin[i, 3:6]
+                hit = float(term_contact_np[i]) if term_contact_np is not None else 0.0
+                row[[CONTACT_COL, BASE_COL]] = hit
+                row[[HEAD_COL, LEG_COL]] = 0.0
             else:
-                row[:FORCE_COL + 1] = rec[i]
-                row[CONTACT_COL] = float(contact is not None and rec[i, FORCE_COL] > contact["threshold"])
+                row[:N_KIN] = kin[i]
+                fb, fh, fl = pf["base"][i], pf["head"][i], pf["legs"][i]
+                row[FORCE_COL], row[LEG_FORCE_COL] = max(fb, fh), fl
+                row[BASE_COL], row[HEAD_COL], row[LEG_COL] = float(fb > thr), float(fh > thr), float(fl > thr)
+                row[CONTACT_COL] = max(row[BASE_COL], row[HEAD_COL])
             rows[i].append(row)
 
         if done.any():
@@ -902,6 +1003,11 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                 rows[i] = []
                 if contact is None:
                     ep_metrics.update({key: None for key in CONTACT_KEYS})
+                else:  # parts without bodies on this robot are not measured
+                    if not contact["parts"]["head"]["ids"]:
+                        ep_metrics.update({key: None for key in HEAD_KEYS})
+                    if not contact["parts"]["legs"]["ids"]:
+                        ep_metrics.update({key: None for key in LEG_KEYS})
                 # success: the goal line / the full turn, or (sprint) surviving the episode AND coming to a stop
                 survived_and_stopped = sc.success_on_timeout and bool(timeout[i]) and ep_metrics.get("stop_time_s") is not None
                 success = bool(goal_hit[i]) or survived_and_stopped
@@ -960,7 +1066,8 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                     f"[{name}] episode {len(episodes)}/{args_cli.episodes}: {verdict:<8} "
                     f"time={duration:.1f}s progress={prog_txt}{mid}{sprint_txt} yaw_err={yaw_txt} "
                     f"{lat_txt}={ep['max_lateral_m']:.2f}m vel_err={ep['vel_err_xy_mps']:.2f}m/s "
-                    f"trunk_contacts={ep['trunk_contact_events'] if ep['trunk_contact_events'] is not None else '-'} "
+                    f"contacts: trunk={_f(ep['trunk_contact_events'], 'd')} (head {_f(ep['head_contact_events'], 'd')}) "
+                    f"legs={_f(ep['leg_contact_events'], 'd')} "
                     f"reward={ep['total_reward']:.1f} end={ep['end_reason']}",
                     flush=True,
                 )
@@ -998,9 +1105,10 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         if contact is None
         else {
             "sensor": contact["name"],
-            "bodies": contact["bodies"],
+            "bodies": contact["parts"]["base"]["bodies"] + contact["parts"]["head"]["bodies"],  # trunk = base + head
+            "parts": {part: p["bodies"] for part, p in contact["parts"].items()},
             "threshold_n": contact["threshold"],
-            "terminates_episode": bool(contact_cols),
+            "terminates_episode": bool(contact_cols),  # only the base contact ends the episode (training termination)
             "merge_gap_s": CONTACT_MERGE_GAP_S,
         },
     }
