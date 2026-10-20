@@ -4,15 +4,16 @@ It is started automatically when evaluate.py finishes (use --no_report there to 
 started on its own on any saved report:
 
     python scripts/rsl_rl/eval_report.py path/to/report.json
-    python scripts/rsl_rl/eval_report.py report.json --scenarios "stairs_up_1*,rough_boxes*"
+    python scripts/rsl_rl/eval_report.py report.json --scenarios "rough_pyramid_stairs_1*,rough_boxes*"
     python scripts/rsl_rl/eval_report.py report.json --save plots/ --no_show
 
 Windows (matplotlib):
   * one window for the whole run: outcomes per scenario, success vs. stair height, speed tracking, trunk
     contacts and a numeric summary of the controller with its weakest scenarios;
   * one window per scenario: averages over all its episodes, aligned by position along the course;
-  * one window per episode: forward speed vs. time with the commanded speed, the trunk-contact timeline,
-    progress, heading error / tilt / lateral deviation and all numeric metrics of that episode.
+  * one window per episode: the speed of the scenario (forward, backward, sideways or the turn rate) vs. time
+    with the commanded value, the trunk-contact timeline, progress, heading error / tilt / lateral deviation
+    and all numeric metrics of that episode; the sprint scenario also shows the stop command and the stop.
 
 This script does not need Isaac Sim, only numpy and matplotlib. Without a display it saves PNG files instead.
 """
@@ -22,6 +23,7 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import json
+import math
 import os
 import re
 import sys
@@ -99,12 +101,33 @@ def get_meta(sc: dict, episodes: list[dict]) -> dict:
     """Scenario meta with sane defaults for reports that were written without it."""
     meta = dict(sc.get("meta") or {})
     meta.setdefault("command_speed_mps", mean_of(episodes, "command_speed_mps") or 0.5)
+    meta.setdefault("motion", "walk")  # walk | turn | sprint_brake
+    meta.setdefault("primary_channel", "vx")  # the velocity channel that carries the command: vx | vy | wz
+    meta.setdefault("primary_sign", 1.0)  # +1 / -1: plotted value = sign * channel (backward / right are negative)
+    meta.setdefault("primary_label", "forward speed")
+    meta.setdefault("primary_unit", "m/s")
+    meta.setdefault("primary_command", meta.get("command_speed_mps"))
+    meta.setdefault("progress_unit", "m")
+    meta.setdefault("brake_time_s", None)
     meta.setdefault("spawn_x", None)
     meta.setdefault("goal_x", None)
     meta.setdefault("midpoint_x", None)
     meta.setdefault("midpoint_label", "top")
     meta.setdefault("obstacle_half_width", None)
     return meta
+
+
+def primary_series(series: dict, meta: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Measured and commanded value of the scenario's main speed, sign-corrected so that "more" is positive."""
+    channel, sign = meta["primary_channel"], float(meta["primary_sign"])
+    return sign * num(series.get(channel)), sign * num(series.get("cmd_" + channel))
+
+
+def fmt_progress(value, meta: dict, none: str = "-") -> str:
+    """Progress with its unit: metres along the course, or degrees for the turn on the spot."""
+    if meta.get("progress_unit") == "deg":
+        return fmt(value, ".0f", "deg", none)
+    return fmt(value, ".2f", "m", none)
 
 
 def contact_threshold(meta: dict):
@@ -126,12 +149,55 @@ def shade_obstacle_time(ax, t: np.ndarray, x: np.ndarray, half, dt: float):
         ax.axvspan(t[s] - dt, t[e - 1], color=C_OBSTACLE, alpha=0.16, lw=0, label="on the obstacle" if k == 0 else None)
 
 
-def style_axes(ax, title: str, ylabel: str = "", xlabel: str = ""):
-    ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c")
+def style_axes(ax, title: str, ylabel: str = "", xlabel: str = "", subtitle: str = ""):
+    """Bold title; subtitle is an optional second line (legend hints) in smaller grey text below it."""
+    if subtitle:
+        ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c", pad=15 + 12 * subtitle.count("\n"))
+        ax.text(0.0, 1.015, subtitle, transform=ax.transAxes, ha="left", va="bottom", fontsize=8, color=C_GRAY)
+    else:
+        ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c")
     ax.set_ylabel(ylabel)
     if xlabel:
         ax.set_xlabel(xlabel)
     ax.grid(True, alpha=0.3)
+
+
+# Screen size in pixels (set in main() when windows are shown) and an optional fixed dpi (--dpi).
+SCREEN: dict = {"w": None, "h": None, "dpi": None}
+FIT_HEIGHT_CAP_IN = 9.6  # taller figures do not shrink the dpi further (they are clipped to the screen height)
+
+
+def screen_size() -> tuple[int, int] | None:
+    """Screen size in pixels, or None if it cannot be read (no display, no tkinter)."""
+    try:
+        import tkinter
+
+        root = tkinter.Tk()
+        root.withdraw()
+        size = root.winfo_screenwidth(), root.winfo_screenheight()
+        root.destroy()
+        return size
+    except Exception:
+        return None
+
+
+def fit_dpi(width_in: float, height_in: float) -> float:
+    """dpi at which a figure of this size fits on the screen. A window that is too big gets squeezed by the
+    window manager while the fonts keep their size, which makes the texts overlap; a lower dpi scales the
+    whole figure (fonts included) instead."""
+    if SCREEN["dpi"]:
+        return float(SCREEN["dpi"])
+    if not SCREEN["w"]:
+        return 100.0
+    dpi = min(100.0, 0.96 * SCREEN["w"] / width_in, 0.88 * SCREEN["h"] / min(height_in, FIT_HEIGHT_CAP_IN))
+    return max(dpi, 50.0)
+
+
+def new_figure(plt, width_in: float, height_in: float):
+    dpi = fit_dpi(width_in, height_in)
+    if SCREEN["h"] and not SCREEN["dpi"]:  # never taller than the screen
+        height_in = min(height_in, 0.88 * SCREEN["h"] / dpi)
+    return plt.figure(figsize=(width_in, height_in), dpi=dpi, facecolor=BG)
 
 
 def set_window_title(fig, title: str):
@@ -166,9 +232,20 @@ def pad_top(ax, fraction: float):
 
 def episode_text(name: str, meta: dict, ep: dict, k: int, n: int) -> list[str]:
     verdict = outcome(ep)
-    cmd = meta.get("command_speed_mps")
+    turn = meta.get("motion") == "turn"
+    sprint = meta.get("motion") == "sprint_brake"
+    unit = meta.get("primary_unit", "m/s")
+    cmd = meta.get("primary_command")
     speed = ep.get("forward_speed_mps")
-    ratio = None if not cmd or speed is None else speed / cmd
+    if turn:  # the mean turn rate comes from the time series
+        measured, _ = primary_series(ep.get("series") or {}, meta)
+        speed = float(np.nanmean(measured)) if np.isfinite(measured).any() else None
+    ratio = None if sprint or not cmd or speed is None else speed / cmd
+    label = meta.get("primary_label", "forward speed")
+    if sprint and meta.get("brake_time_s") is not None:
+        command_txt = f"{fmt(cmd, '.2f')} {unit}, stop {meta['brake_time_s']:.0f} s"
+    else:
+        command_txt = fmt(cmd, ".2f", unit)
     lines = [
         f"{name}",
         f"seed {ep.get('seed', '?')}   episode {k}/{n}",
@@ -177,20 +254,20 @@ def episode_text(name: str, meta: dict, ep: dict, k: int, n: int) -> list[str]:
         kv("end reason", str(ep.get("end_reason", "-"))),
         kv("duration", fmt(ep.get("duration_s"), ".1f", "s")),
         kv("time to goal", fmt(ep.get("time_to_goal_s"), ".1f", "s")),
-        kv("progress", fmt(ep.get("progress_m"), ".2f", "m")),
+        kv("progress", fmt_progress(ep.get("progress_m"), meta)),
         kv(f"reached {meta.get('midpoint_label', 'top')}", "yes" if ep.get("reached_midpoint") else "no")
         if meta.get("midpoint_x") is not None
         else kv("midpoint", "n/a"),
         "",
         "SPEED TRACKING",
-        kv("commanded speed", fmt(cmd, ".2f", "m/s")),
-        kv("mean forward speed", f"{fmt(speed, '.2f', 'm/s')}  ({pct(ratio)})"),
+        kv("command", command_txt),
+        kv("mean turn rate" if turn else "mean speed", f"{fmt(speed, '.2f', unit)}" + ("" if ratio is None else f"  ({pct(ratio)})")),
         kv("vel error xy", fmt(ep.get("vel_err_xy_mps"), ".3f", "m/s")),
         kv("vel error yaw", fmt(ep.get("vel_err_yaw_radps"), ".3f", "rad/s")),
         "",
         "PATH",
-        kv("max heading error", fmt(ep.get("max_yaw_err_deg"), ".1f", "deg")),
-        kv("max lateral dev.", fmt(ep.get("max_lateral_m"), ".2f", "m")),
+        kv("max heading error", "not held" if turn else fmt(ep.get("max_yaw_err_deg"), ".1f", "deg")),
+        kv("max drift from start" if turn else "max lateral dev.", fmt(ep.get("max_lateral_m"), ".2f", "m")),
         "",
         "TRUNK CONTACTS",
         kv("events", fmt(ep.get("trunk_contact_events"), ".0f")),
@@ -198,6 +275,20 @@ def episode_text(name: str, meta: dict, ep: dict, k: int, n: int) -> list[str]:
         kv("first contact at", fmt(ep.get("first_trunk_contact_s"), ".2f", "s")),
         kv("max force", fmt(ep.get("max_trunk_contact_force_n"), ".0f", "N")),
         "",
+        *(
+            [
+                "SPRINT AND STOP",
+                kv("peak speed", fmt(ep.get("peak_speed_mps"), ".2f", "m/s")),
+                kv("time to 90 % of cmd", fmt(ep.get("time_to_90pct_s"), ".1f", "s")),
+                kv("speed at stop cmd", fmt(ep.get("speed_at_brake_mps"), ".2f", "m/s")),
+                kv("stop time", fmt(ep.get("stop_time_s"), ".2f", "s")),
+                kv("stop distance", fmt(ep.get("stop_distance_m"), ".2f", "m")),
+                kv("lowest speed after", fmt(ep.get("min_speed_after_brake_mps"), ".2f", "m/s")),
+                "",
+            ]
+            if sprint
+            else []
+        ),
         "STABILITY",
         kv("tilt mean / max", f"{fmt(ep.get('mean_tilt_deg'), '.1f')} / {fmt(ep.get('max_tilt_deg'), '.1f')} deg"),
         "",
@@ -221,10 +312,13 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
     series = ep.get("series") or {}
     t = num(series.get("t"))
     dt = float(series.get("dt") or 0.1)
-    cmd_speed = meta.get("command_speed_mps")
+    cmd_speed = meta.get("primary_command")
+    unit = meta.get("primary_unit", "m/s")
+    label = meta.get("primary_label", "forward speed")
+    turn = meta.get("motion") == "turn"
     half = meta.get("obstacle_half_width")
 
-    fig = plt.figure(figsize=(15.6, 9.0), facecolor=BG)
+    fig = new_figure(plt, 15.6, 9.0)
     gs = fig.add_gridspec(
         4, 2, width_ratios=[3.3, 1.3], height_ratios=[2.3, 1.15, 1.6, 1.6],
         left=0.055, right=0.985, top=0.925, bottom=0.07, hspace=0.42, wspace=0.07,
@@ -248,20 +342,21 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
 
     x = num(series.get("x"))
     xf = forward_fill(x)
-    vx, cmd_vx = num(series.get("vx")), num(series.get("cmd_vx"))
+    vx, cmd_vx = primary_series(series, meta)
     force, contact = num(series.get("contact_force_n")), num(series.get("contact"))
     t_end = float(t[-1])
 
     # --- speed ---
     shade_obstacle_time(ax_v, t, xf, half, dt)
-    ax_v.plot(t, vx, color=C_SPEED, lw=1.6, label="measured forward speed")
-    ax_v.plot(t, cmd_vx, color=C_CMD, lw=1.4, ls="--", label=f"commanded speed ({fmt(cmd_speed, '.2f')} m/s)")
-    mean_speed = np.nanmean(vx) if np.isfinite(vx).any() else None
+    sprint = meta.get("motion") == "sprint_brake"
+    ax_v.plot(t, vx, color=C_SPEED, lw=1.6, label="measured")
+    ax_v.plot(t, cmd_vx, color=C_CMD, lw=1.4, ls="--", label="commanded" + ("" if sprint else f" ({fmt(cmd_speed, '.2f')} {unit})"))
+    mean_speed = np.nanmean(vx) if np.isfinite(vx).any() and not sprint else None
     if mean_speed is not None:
-        ax_v.axhline(mean_speed, color=C_SPEED, lw=1.0, ls=":", label=f"mean {mean_speed:.2f} m/s")
-    style_axes(ax_v, "Forward speed", "speed, m/s")
-    top = max(1.35 * (cmd_speed or 0.0), 1.1 * (np.nanmax(vx) if np.isfinite(vx).any() else 0.0), 0.1)
-    ax_v.set_ylim(min(0.0, np.nanmin(vx) if np.isfinite(vx).any() else 0.0), top)
+        ax_v.axhline(mean_speed, color=C_SPEED, lw=1.0, ls=":", label=f"mean {mean_speed:.2f} {unit}")
+    style_axes(ax_v, label[:1].upper() + label[1:], f"{'turn rate' if turn else 'speed'}, {unit}")
+    peak = max(1.1 * (np.nanmax(vx) if np.isfinite(vx).any() else 0.0), 1.35 * (cmd_speed or 0.0), 0.1)
+    ax_v.set_ylim(min(0.0, np.nanmin(vx) if np.isfinite(vx).any() else 0.0), peak)
     ax_v.legend(loc="upper right", fontsize=8, ncol=2, framealpha=0.9)
 
     # --- trunk contacts ---
@@ -297,24 +392,26 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
     # --- progress ---
     if half is not None:
         ax_p.axhspan(-half, half, color=C_OBSTACLE, alpha=0.16, lw=0, label="obstacle")
-    ax_p.plot(t, x, color="#333333", lw=1.4, label="position along the course")
+    ax_p.plot(t, x, color="#333333", lw=1.4, label="total rotation" if turn else "position along the course")
     if meta.get("spawn_x") is not None:
         ax_p.axhline(meta["spawn_x"], color=C_GRAY, lw=0.9, ls=":", label="start")
     if meta.get("midpoint_x") is not None:
         ax_p.axhline(meta["midpoint_x"], color=C_SPEED, lw=0.9, ls="--", label=meta.get("midpoint_label", "midpoint"))
     if meta.get("goal_x") is not None:
         ax_p.axhline(meta["goal_x"], color=C_OK, lw=1.0, ls="--", label="goal")
-    style_axes(ax_p, "Progress", "x, m")
+    style_axes(ax_p, "Progress", f"{'rotation' if turn else 'x'}, {meta.get('progress_unit', 'm')}")
     ax_p.legend(loc="upper left", fontsize=7.5, ncol=5, framealpha=0.9)
 
     # --- heading / tilt / lateral deviation ---
-    ax_h.plot(t, num(series.get("yaw_err_deg")), color=C_YAW, lw=1.2, label="heading error, deg")
+    yaw_err = num(series.get("yaw_err_deg"))
+    if np.isfinite(yaw_err).any():
+        ax_h.plot(t, yaw_err, color=C_YAW, lw=1.2, label="heading error, deg")
     ax_h.plot(t, num(series.get("tilt_deg")), color=C_TILT, lw=1.2, label="tilt, deg")
-    style_axes(ax_h, "Heading error, tilt and lateral deviation", "deg", "time since episode start, s")
+    style_axes(ax_h, "Tilt and drift from the start point" if turn else "Heading error, tilt and lateral deviation", "deg", "time since episode start, s")
     pad_top(ax_h, 0.35)
     ax_l = ax_h.twinx()
-    ax_l.plot(t, num(series.get("y")), color=C_LAT, lw=1.2, label="lateral deviation, m")
-    ax_l.set_ylabel("lateral, m", color=C_LAT)
+    ax_l.plot(t, num(series.get("y")), color=C_LAT, lw=1.2, label="drift from the start, m" if turn else "lateral deviation, m")
+    ax_l.set_ylabel("drift, m" if turn else "lateral, m", color=C_LAT)
     ax_l.grid(False)
     pad_top(ax_l, 0.35)
     h1, l1 = ax_h.get_legend_handles_labels()
@@ -329,13 +426,22 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
         hit = np.flatnonzero(np.isfinite(x) & (x >= meta["midpoint_x"]))
         if hit.size:
             marks.append((float(t[hit[0]]), C_SPEED, "--", meta.get("midpoint_label", "midpoint")))
+    brake = meta.get("brake_time_s")
+    if brake is not None:
+        marks.append((float(brake), C_YAW, "-", "stop command"))
+        if ep.get("stop_time_s") is not None:
+            marks.append((float(brake) + float(ep["stop_time_s"]), C_OK, ":", "stopped"))
     if verdict == "FELL":
         marks.append((t_end, C_FALL, "-", f"ended: {ep.get('end_reason', '?')}"))
     for axis in (ax_v, ax_c, ax_p, ax_h):
         for when, colour, ls, _ in marks:
             axis.axvline(when, color=colour, lw=1.1, ls=ls, alpha=0.9)
-    for when, colour, _, label in marks:
-        ax_v.text(when, 1.0, f" {label}", transform=ax_v.get_xaxis_transform(), color=colour, fontsize=8, va="bottom", ha="left")
+    marks.sort(key=lambda m: m[0])
+    for i, (when, colour, _, mark_label) in enumerate(marks):
+        # two close markers (e.g. "stop command" and "stopped"): the earlier label goes to the left of its line
+        crowded = i + 1 < len(marks) and marks[i + 1][0] - when < 0.12 * t_end
+        ax_v.text(when, 1.0, f"{mark_label} " if crowded else f" {mark_label}", transform=ax_v.get_xaxis_transform(),
+                  color=colour, fontsize=8, va="bottom", ha="right" if crowded else "left")  # fmt: skip
     ax_v.set_xlim(0, t_end * 1.02)
     for axis in (ax_v, ax_c, ax_p):
         plt.setp(axis.get_xticklabels(), visible=False)
@@ -347,8 +453,10 @@ def episode_figure(plt, name: str, meta: dict, ep: dict, k: int, n: int):
 ##
 
 
-def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=None):
-    """Mean, std (over episodes), max (over samples) and number of episodes per position bin of a channel.
+def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=None, xkey: str = "x"):
+    """Mean, std (over episodes), max (over samples) and number of episodes per bin of a channel.
+
+    The bins are along xkey: "x" = position along the course (or rotation), "t" = time since the episode start.
 
     Every episode is averaged inside each bin first, so that an episode that spends a long time at one place
     (e.g. a robot that got stuck) does not outweigh the others.
@@ -357,7 +465,7 @@ def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=
     means, maxima = [], []
     for ep in episodes:
         s_ = ep.get("series") or {}
-        x, v = num(s_.get("x")), num(s_.get(key))
+        x, v = num(s_.get(xkey)), num(s_.get(key))
         if not x.size or not v.size:
             continue
         if transform is not None:
@@ -381,13 +489,13 @@ def position_stats(episodes: list[dict], key: str, edges: np.ndarray, transform=
         return np.nanmean(m, axis=0), np.nanstd(m, axis=0), np.nanmax(mxs, axis=0), np.isfinite(m).sum(axis=0)
 
 
-def contact_by_position(episodes: list[dict], edges: np.ndarray) -> np.ndarray:
-    """Share (0..1) of the episodes that had a trunk contact in each position bin (among those that were there)."""
+def contact_by_position(episodes: list[dict], edges: np.ndarray, xkey: str = "x") -> np.ndarray:
+    """Share (0..1) of the episodes that had a trunk contact in each bin (among those that were there)."""
     nb = len(edges) - 1
     visited, touched = np.zeros(nb), np.zeros(nb)
     for ep in episodes:
         s = ep.get("series") or {}
-        x = forward_fill(num(s.get("x")))
+        x = forward_fill(num(s.get(xkey)))
         c = num(s.get("contact")) > 0.5
         if not x.size:
             continue
@@ -406,28 +514,56 @@ def scenario_text(name: str, meta: dict, sc: dict) -> list[str]:
     s = sc["summary"]
     eps = sc["episodes"]
     kv = lambda label, value: _kv(label, value, 26)  # noqa: E731
+    turn = meta.get("motion") == "turn"
+    sprint = meta.get("motion") == "sprint_brake"
+    unit = meta.get("primary_unit", "m/s")
+    cmd = meta.get("primary_command")
+    mean_speed = s.get("mean_forward_speed_mps")
+    if turn:  # mean turn rate from the series of the episodes
+        vals = [float(np.nanmean(primary_series(e.get("series") or {}, meta)[0])) for e in eps if (e.get("series") or {}).get("t")]
+        mean_speed = float(np.mean(vals)) if vals else None
+    command_txt = (
+        f"{fmt(cmd, '.2f')} {unit}, stop {meta['brake_time_s']:.0f} s"
+        if sprint and meta.get("brake_time_s") is not None
+        else fmt(cmd, ".2f", unit)
+    )
     return [
         f"{name}",
-        f"{len(eps)} episodes, seeds {sc.get('seeds', '?')}",
+        f"{len(eps)} episode{'' if len(eps) == 1 else 's'}, seeds {sc.get('seeds', '?')}",
         "",
         "OUTCOME",
         kv("success", pct(s.get("success_rate"))),
-        kv(f"reached {meta.get('midpoint_label', 'top')}", pct(s.get("midpoint_rate"))),
-        kv("fell before goal", pct(s.get("fall_rate"))),
+        *([kv(f"reached {meta.get('midpoint_label', 'top')}", pct(s.get("midpoint_rate")))] if meta.get("midpoint_x") is not None else []),
+        kv("fell / ended early", pct(s.get("fall_rate"))),
         kv("timeout", pct(s.get("timeout_rate"))),
         kv("mean time to goal", fmt(s.get("mean_time_to_goal_s"), ".1f", "s")),
-        kv("mean progress", fmt(s.get("mean_progress_m"), ".2f", "m")),
+        kv("mean progress", fmt_progress(s.get("mean_progress_m"), meta)),
         "",
         "SPEED TRACKING",
-        kv("commanded speed", fmt(meta.get("command_speed_mps"), ".2f", "m/s")),
-        kv("mean forward speed", fmt(s.get("mean_forward_speed_mps"), ".2f", "m/s")),
+        kv("command", command_txt),
+        kv("mean turn rate" if turn else "mean speed", fmt(mean_speed, ".2f", unit)),
         kv("vel error xy", fmt(s.get("mean_vel_err_xy_mps"), ".3f", "m/s")),
         kv("vel error yaw", fmt(s.get("mean_vel_err_yaw_radps"), ".3f", "rad/s")),
         "",
         "PATH (max per episode)",
-        kv("heading err mean / worst", f"{fmt(s.get('mean_max_yaw_err_deg'), '.1f')} / {fmt(s.get('worst_max_yaw_err_deg'), '.1f')} deg"),
-        kv("lateral mean / worst", f"{fmt(s.get('mean_max_lateral_m'), '.2f')} / {fmt(s.get('worst_max_lateral_m'), '.2f')} m"),
+        kv("heading err mean / worst", "not held" if turn else f"{fmt(s.get('mean_max_yaw_err_deg'), '.1f')} / {fmt(s.get('worst_max_yaw_err_deg'), '.1f')} deg"),
+        kv(("drift" if turn else "lateral") + " mean / worst", f"{fmt(s.get('mean_max_lateral_m'), '.2f')} / {fmt(s.get('worst_max_lateral_m'), '.2f')} m"),
         "",
+        *(
+            [
+                "SPRINT AND STOP",
+                kv("peak speed", fmt(s.get("mean_peak_speed_mps"), ".2f", "m/s")),
+                kv("time to 90 % of cmd", fmt(s.get("mean_time_to_90pct_s"), ".1f", "s")),
+                kv("speed at stop cmd", fmt(s.get("mean_speed_at_brake_mps"), ".2f", "m/s")),
+                kv("stopped (episodes)", pct(s.get("stopped_rate"))),
+                kv("stop time", fmt(s.get("mean_stop_time_s"), ".2f", "s")),
+                kv("stop distance", fmt(s.get("mean_stop_distance_m"), ".2f", "m")),
+                kv("lowest speed after", fmt(s.get("lowest_speed_after_brake_mps"), ".2f", "m/s")),
+                "",
+            ]
+            if sprint
+            else []
+        ),
         "TRUNK CONTACTS",
         kv("episodes with contact", pct(s.get("trunk_contact_episode_rate"))),
         kv("events per episode", fmt(s.get("mean_trunk_contacts_per_episode"), ".2f")),
@@ -452,16 +588,25 @@ def scenario_text(name: str, meta: dict, sc: dict) -> list[str]:
 def scenario_figure(plt, name: str, sc: dict):
     eps = sc["episodes"]
     meta = get_meta(sc, eps)
-    cmd_speed = meta.get("command_speed_mps") or 0.5
+    motion = meta.get("motion", "walk")
+    turn, time_aligned = motion == "turn", motion == "sprint_brake"
+    unit = meta.get("primary_unit", "m/s")
+    label = meta.get("primary_label", "forward speed")
+    sign = float(meta.get("primary_sign", 1.0))
+    channel = meta.get("primary_channel", "vx")
+    cmd_speed = meta.get("primary_command") or 0.5
+    brake = meta.get("brake_time_s")
     half = meta.get("obstacle_half_width")
     rec_dt = (meta.get("record_dt_s") or 0.1)
+    xkey = "t" if time_aligned else "x"
+    x_label = "time since episode start, s" if time_aligned else ("total rotation, deg" if turn else "position x along the course, m")
     spawn = meta.get("spawn_x")
     goal = meta.get("goal_x")
     has_series = any((e.get("series") or {}).get("t") for e in eps)
 
-    fig = plt.figure(figsize=(16.5, 9.2), facecolor=BG)
+    fig = new_figure(plt, 16.5, 9.2)
     gs = fig.add_gridspec(
-        3, 3, width_ratios=[1.0, 1.0, 0.72], left=0.05, right=0.99, top=0.925, bottom=0.07, hspace=0.45, wspace=0.36
+        3, 3, width_ratios=[1.0, 1.0, 0.72], left=0.05, right=0.99, top=0.895, bottom=0.07, hspace=0.62, wspace=0.36
     )  # fmt: skip
     ax_sp = fig.add_subplot(gs[0, 0])
     ax_ov = fig.add_subplot(gs[0, 1])
@@ -470,7 +615,11 @@ def scenario_figure(plt, name: str, sc: dict):
     ax_hd = fig.add_subplot(gs[2, 0], sharex=ax_sp)
     ax_tp = fig.add_subplot(gs[2, 1], sharex=ax_sp)
     ax_tx = fig.add_subplot(gs[:, 2])
-    fig.suptitle(f"{name}   |   average over {len(eps)} episodes", fontsize=13, fontweight="bold", color="#1f4e8c", x=0.05, ha="left")
+    episodes_txt = f"{len(eps)} episode" + ("" if len(eps) == 1 else "s")
+    fig.suptitle(f"{name}   |   average over {episodes_txt}", fontsize=13, fontweight="bold", color="#1f4e8c", x=0.05, y=0.975, ha="left")
+    short_label = label.split(" (")[0]  # e.g. "turn rate" of "turn rate (counter-clockwise)"
+    label_note = label[len(short_label):].strip(" ()")
+    title_label = short_label[:1].upper() + short_label[1:]
     set_window_title(fig, f"{name} - scenario average")
     text_panel(ax_tx, scenario_text(name, meta, sc), size=8.2)
 
@@ -481,33 +630,48 @@ def scenario_figure(plt, name: str, sc: dict):
     ax.bar(idx, progress, color=[OUTCOME_COLORS[outcome(e)] for e in eps], width=0.7)
     if spawn is not None and goal is not None:
         ax.axhline(goal - spawn, color=C_OK, ls="--", lw=1.0)
-        ax.text(len(eps) + 0.45, goal - spawn, "distance to goal ", color=C_OK, fontsize=7.5, ha="right", va="bottom")
+        ax.text(0.99, goal - spawn, "full turn" if turn else "distance to goal", transform=ax.get_yaxis_transform(),
+                color=C_OK, fontsize=7.5, ha="right", va="bottom")  # fmt: skip
         ax.set_ylim(0, (goal - spawn) * 1.18)
+    elif progress:
+        ax.set_ylim(0, max(progress) * 1.25 + 1e-9)
     for i, e in zip(idx, eps):
         n_c = e.get("trunk_contact_events")
-        label = f"{e.get('duration_s', 0):.0f}s" + (f"\n{n_c}c" if n_c else "")
-        ax.text(i, (e.get("progress_m") or 0.0), label, ha="center", va="bottom", fontsize=7, color="#333333")
+        bar_text = f"{e.get('duration_s', 0):.0f}s" + (f"\n{n_c}c" if n_c else "")
+        ax.text(i, (e.get("progress_m") or 0.0), bar_text, ha="center", va="bottom", fontsize=7, color="#333333")
+    if len(eps) < 5:  # few episodes: do not stretch the bars over the whole width
+        ax.set_xlim((len(eps) + 1) / 2 - 2.5, (len(eps) + 1) / 2 + 2.5)
     if len(eps) <= 30:
         ax.set_xticks(idx)
         seeds = [e.get("seed") for e in eps]
         multi = len(set(seeds)) > 1
         ax.set_xticklabels([f"{i}\ns{sd}" if multi else str(i) for i, sd in zip(idx, seeds)], fontsize=7)
-    style_axes(ax, "Outcome per episode (green = success, red = fell, amber = timeout)", "progress, m",
-               "episode   (above a bar: duration and 'Nc' = trunk contact events)")  # fmt: skip
+    style_axes(ax, "Outcome per episode", f"progress, {meta.get('progress_unit', 'm')}", "episode",
+               subtitle="green = success, red = fell, amber = timeout; above a bar: duration, Nc = trunk contacts")  # fmt: skip
 
     if not has_series:
         for axis in (ax_sp, ax_ov, ax_ct, ax_hd, ax_tp):
             axis.text(0.5, 0.5, "this report has no time series", ha="center", va="center", transform=axis.transAxes)
         return fig
 
-    # position bins
-    lo = spawn if spawn is not None else min(np.nanmin(num((e.get("series") or {}).get("x"))) for e in eps if (e.get("series") or {}).get("x"))
-    hi = goal if goal is not None else max(np.nanmax(num((e.get("series") or {}).get("x"))) for e in eps if (e.get("series") or {}).get("x"))
-    bw = max(0.1, 2.0 * cmd_speed * rec_dt)
+    # bins: position along the course, rotation angle, or (sprint) time since the start of the episode
+    if time_aligned:
+        lo, hi, bw = 0.0, max(float(e.get("duration_s") or 0.0) for e in eps), rec_dt
+    else:
+        xs = [num((e.get("series") or {}).get("x")) for e in eps if (e.get("series") or {}).get("x")]
+        lo = spawn if spawn is not None else min(np.nanmin(x) for x in xs)
+        hi = goal if goal is not None else max(np.nanmax(x) for x in xs)
+        bw = max(5.0, 2.0 * math.degrees(cmd_speed) * rec_dt) if turn else max(0.1, 2.0 * cmd_speed * rec_dt)
     edges = np.arange(lo, hi + bw, bw)
+    if time_aligned:
+        edges = edges - 0.5 * bw  # the samples lie at multiples of record_dt: centre the bins on them
     centers = 0.5 * (edges[:-1] + edges[1:])
 
     def course_marks(axis):
+        if time_aligned:
+            if brake is not None:
+                axis.axvline(brake, color=C_YAW, lw=1.1, ls="-")
+            return
         if half is not None:
             axis.axvspan(-half, half, color=C_OBSTACLE, alpha=0.16, lw=0)
         if meta.get("midpoint_x") is not None:
@@ -518,70 +682,99 @@ def scenario_figure(plt, name: str, sc: dict):
             axis.axvline(spawn, color=C_GRAY, lw=0.9, ls=":")
 
     # --- speed vs position ---
-    mean, std, _, cnt = position_stats(eps, "vx", edges)
+    scale = lambda v: sign * v  # noqa: E731
+    mean, std, _, cnt = position_stats(eps, channel, edges, transform=scale, xkey=xkey)
+    cmd_mean, _, _, _ = position_stats(eps, "cmd_" + channel, edges, transform=scale, xkey=xkey)
     course_marks(ax_sp)
-    ax_sp.fill_between(centers, mean - std, mean + std, color=C_SPEED, alpha=0.2, lw=0, label="mean +- std")
-    ax_sp.plot(centers, mean, color=C_SPEED, lw=1.8, label="measured forward speed")
-    ax_sp.axhline(cmd_speed, color=C_CMD, ls="--", lw=1.3, label=f"commanded ({cmd_speed:.2f} m/s)")
-    style_axes(ax_sp, "Forward speed along the course (grey band = obstacle)", "speed, m/s")
-    ax_sp.set_ylim(0, max(1.35 * cmd_speed, 1.1 * float(np.nanmax(mean + std)) if np.isfinite(mean).any() else 0.0))
-    ax_sp.legend(loc="upper right", fontsize=8, ncol=3, framealpha=0.9)
+    ax_sp.fill_between(centers, mean - std, mean + std, color=C_SPEED, alpha=0.2, lw=0, label="mean ± std")
+    ax_sp.plot(centers, mean, color=C_SPEED, lw=1.8, label="measured")
+    ax_sp.plot(centers, cmd_mean, color=C_CMD, ls="--", lw=1.3, label="commanded")
+    where = "over time" if time_aligned else ("over the turn" if turn else "along the course")
+    notes = [label_note] if label_note else []
+    if not time_aligned:
+        notes.append(f"command {cmd_speed:.2f} {unit}")
+    if half is not None:
+        notes.append("grey band = obstacle")
+    if time_aligned and brake is not None:
+        notes.append("orange line = stop command")
+    if not notes:
+        notes.append("shaded = spread over episodes")
+    style_axes(ax_sp, f"{title_label} {where}", f"{'turn rate' if turn else 'speed'}, {unit}", subtitle="; ".join(notes))
+    top = max(1.25 * cmd_speed, float(np.nanmax(mean + std)) if np.isfinite(mean).any() else 0.0)
+    ax_sp.set_ylim(min(0.0, 1.1 * float(np.nanmin(mean - std)) if np.isfinite(mean).any() else 0.0), top)
+    pad_top(ax_sp, 0.3)  # room for the legend above the curves
+    ax_sp.legend(loc="upper right", fontsize=7.5, ncol=3, framealpha=0.9, handlelength=1.6, columnspacing=1.0)
     plt.setp(ax_sp.get_xticklabels(), visible=False)
 
     # --- speed vs time overlay ---
     for e in eps:
         s = e.get("series") or {}
         if s.get("t"):
-            ax_ov.plot(num(s["t"]), num(s["vx"]), color=OUTCOME_COLORS[outcome(e)], lw=1.0, alpha=0.55)
-    ax_ov.axhline(cmd_speed, color=C_CMD, ls="--", lw=1.3)
-    style_axes(ax_ov, "Forward speed vs. time, every episode", "speed, m/s", "time since episode start, s")
+            ax_ov.plot(num(s["t"]), primary_series(s, meta)[0], color=OUTCOME_COLORS[outcome(e)], lw=1.0, alpha=0.55)
+    with_series = [e["series"] for e in eps if (e.get("series") or {}).get("t")]
+    first = max(with_series, key=lambda sr: len(sr["t"])) if with_series else None
+    if time_aligned and first is not None:
+        ax_ov.plot(num(first["t"]), primary_series(first, meta)[1], color=C_CMD, ls="--", lw=1.3)
+        if brake is not None:
+            ax_ov.axvline(brake, color=C_YAW, lw=1.1)
+    else:
+        ax_ov.axhline(cmd_speed, color=C_CMD, ls="--", lw=1.3)
+    style_axes(ax_ov, f"{title_label} vs. time, every episode", f"{'turn rate' if turn else 'speed'}, {unit}", "time since episode start, s",
+               subtitle="colour = outcome of the episode; dashed = command")  # fmt: skip
     ax_ov.set_ylim(bottom=min(0.0, ax_ov.get_ylim()[0]))
 
     # --- contacts by position ---
-    frac = contact_by_position(eps, edges)
+    frac = contact_by_position(eps, edges, xkey)
     course_marks(ax_ct)
     ax_ct.bar(centers, 100.0 * np.nan_to_num(frac, nan=0.0), width=bw * 0.92, color=C_CONTACT)
     ax_ct.set_ylim(0, 105)
-    style_axes(ax_ct, "Where the trunk touched the surface", "% of episodes with contact")
     total_events = sum(e.get("trunk_contact_events") or 0 for e in eps)
-    ax_ct.text(0.995, 0.93, f"{total_events} contact event(s) in {len(eps)} episodes", transform=ax_ct.transAxes, ha="right", va="top",
+    style_axes(ax_ct, "When the trunk touched the surface" if time_aligned else "Where the trunk touched the surface", "% of episodes",
+               subtitle="share of the episodes with a trunk contact at this " + ("time" if time_aligned else ("angle" if turn else "place")))  # fmt: skip
+    ax_ct.text(0.99, 0.95, f"{total_events} contact event(s) in {episodes_txt}", transform=ax_ct.transAxes, ha="right", va="top",
                color=C_CONTACT if total_events else C_OK, fontsize=9, fontweight="bold")  # fmt: skip
     plt.setp(ax_ct.get_xticklabels(), visible=False)
 
     # --- heading error / lateral deviation by position ---
     course_marks(ax_hd)
-    ym, _, ymax, _ = position_stats(eps, "yaw_err_deg", edges)
-    lm, _, lmax, _ = position_stats(eps, "y", edges, transform=np.abs)
-    ax_hd.plot(centers, ym, color=C_YAW, lw=1.5, label="heading error, mean")
-    ax_hd.plot(centers, ymax, color=C_YAW, lw=0.9, ls="--", label="heading error, max")
-    style_axes(ax_hd, "Heading error and lateral deviation", "heading error, deg", "position x along the course, m")
+    ym, _, ymax, _ = position_stats(eps, "yaw_err_deg", edges, xkey=xkey)
+    lm, _, lmax, _ = position_stats(eps, "y", edges, transform=np.abs, xkey=xkey)
+    if np.isfinite(ym).any():
+        ax_hd.plot(centers, ym, color=C_YAW, lw=1.5, label="heading err")
+        ax_hd.plot(centers, ymax, color=C_YAW, lw=0.9, ls="--", label="heading err, max")
+    side = "drift" if turn else "lateral"
+    style_axes(ax_hd, "Drift from the start point" if turn else "Heading error and lateral deviation", "heading error, deg", x_label,
+               subtitle="solid = mean over episodes, dashed = max")  # fmt: skip
     twin = ax_hd.twinx()
-    twin.plot(centers, lm, color=C_LAT, lw=1.5, label="|lateral|, mean")
-    twin.plot(centers, lmax, color=C_LAT, lw=0.9, ls="--", label="|lateral|, max")
-    twin.set_ylabel("lateral, m", color=C_LAT)
+    twin.plot(centers, lm, color=C_LAT, lw=1.5, label=f"|{side}|")
+    twin.plot(centers, lmax, color=C_LAT, lw=0.9, ls="--", label=f"|{side}|, max")
+    twin.set_ylabel(f"{side}, m", color=C_LAT)
+    if not np.isfinite(ym).any():  # nothing on the left axis (heading is not held in a turn)
+        ax_hd.set_yticks([])
+        ax_hd.set_ylabel("")
     twin.grid(False)
     h1, l1 = ax_hd.get_legend_handles_labels()
     h2, l2 = twin.get_legend_handles_labels()
-    pad_top(ax_hd, 0.3)
-    pad_top(twin, 0.3)
-    ax_hd.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7.5, ncol=4, framealpha=0.9)
+    pad_top(ax_hd, 0.45)
+    pad_top(twin, 0.45)
+    ax_hd.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7, ncol=2, framealpha=0.9, handlelength=1.6, columnspacing=1.0)
 
     # --- tilt and power by position ---
     course_marks(ax_tp)
-    tm, _, tmax, _ = position_stats(eps, "tilt_deg", edges)
-    pm, _, _, _ = position_stats(eps, "power_w", edges)
-    ax_tp.plot(centers, tm, color=C_TILT, lw=1.5, label="tilt, mean")
+    tm, _, tmax, _ = position_stats(eps, "tilt_deg", edges, xkey=xkey)
+    pm, _, _, _ = position_stats(eps, "power_w", edges, xkey=xkey)
+    ax_tp.plot(centers, tm, color=C_TILT, lw=1.5, label="tilt")
     ax_tp.plot(centers, tmax, color=C_TILT, lw=0.9, ls="--", label="tilt, max")
-    style_axes(ax_tp, "Tilt and mechanical power", "tilt, deg", "position x along the course, m")
+    style_axes(ax_tp, "Tilt and mechanical power", "tilt, deg", x_label, subtitle="solid = mean over episodes, dashed = max")
     twin2 = ax_tp.twinx()
-    twin2.plot(centers, pm, color=C_GRAY, lw=1.3, label="power, mean")
+    twin2.plot(centers, pm, color=C_GRAY, lw=1.3, label="power")
     twin2.set_ylabel("power, W", color=C_GRAY)
     twin2.grid(False)
     h1, l1 = ax_tp.get_legend_handles_labels()
     h2, l2 = twin2.get_legend_handles_labels()
-    pad_top(ax_tp, 0.3)
-    pad_top(twin2, 0.3)
-    ax_tp.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7.5, ncol=3, framealpha=0.9)
+    pad_top(ax_tp, 0.45)
+    pad_top(twin2, 0.45)
+    ax_tp.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7, ncol=3, framealpha=0.9, handlelength=1.6, columnspacing=1.0)
     ax_sp.set_xlim(edges[0], edges[-1])
     return fig
 
@@ -590,56 +783,97 @@ def scenario_figure(plt, name: str, sc: dict):
 # Whole-run window
 ##
 
-STAIRS_RE = re.compile(r"^stairs_up_(\d+)cm$")
+# scenario families that form a sweep (the old stairs_up_<N>cm names of earlier reports still work)
+STAIRS_RE = re.compile(r"^(?:stairs_up|rough_pyramid_stairs(_inv)?)_(\d+)cm$")
+SLOPE_RE = re.compile(r"^rough_hf_pyramid_slope_(\d+)deg$")
+BOXES_RE = re.compile(r"^rough_boxes_d(\d+)$")
+PASS_RATE = 0.8  # a scenario counts as passed at this success rate
+
+
+def find_sweeps(scenarios: dict) -> dict:
+    """Group the scenarios of a report into sweeps: {title: {curve label: [(x, scenario name), ...]}}."""
+    stairs: dict[str, list] = {"pyramid": [], "pit (inverted)": []}
+    slopes, boxes = [], []
+    for k in scenarios:
+        if m := STAIRS_RE.match(k):
+            stairs["pit (inverted)" if m.group(1) else "pyramid"].append((int(m.group(2)), k))
+        elif m := SLOPE_RE.match(k):
+            slopes.append((int(m.group(1)), k))
+        elif m := BOXES_RE.match(k):
+            boxes.append((int(m.group(1)), k))
+    sweeps = {}
+    if any(len(v) >= 2 for v in stairs.values()):
+        sweeps["Stairs: step height, cm"] = {label: sorted(v) for label, v in stairs.items() if len(v) >= 2}
+    if len(slopes) >= 2:
+        sweeps["Slope: angle, deg"] = {"slope": sorted(slopes)}
+    if len(boxes) >= 2:
+        sweeps["Random blocks: difficulty, %"] = {"boxes": sorted(boxes)}
+    return sweeps
+
+
+def passed_up_to(points: list, scenarios: dict):
+    """Highest x such that every tested x up to it has success >= PASS_RATE (None if even the first one fails)."""
+    passed = None
+    for x, k in points:
+        if scenarios[k]["summary"]["success_rate"] < PASS_RATE:
+            break
+        passed = x
+    return passed
 
 
 def overall_text(report: dict, scenarios: dict) -> list[str]:
-    kv = lambda label, value, width=28: _kv(label, value, width)  # noqa: E731
+    kv = lambda label, value, width=24: _kv(label, value, width)  # noqa: E731
     eps = [e for sc in scenarios.values() for e in sc["episodes"]]
     n = len(eps)
     per_scenario = {k: sc["summary"] for k, sc in scenarios.items()}
     macro = float(np.mean([s["success_rate"] for s in per_scenario.values()])) if per_scenario else None
-    speeds = [(get_meta(sc, sc["episodes"]).get("command_speed_mps"), sc) for sc in scenarios.values()]
-    ratios = [
-        e["forward_speed_mps"] / cmd for cmd, sc in speeds if cmd for e in sc["episodes"] if e.get("forward_speed_mps") is not None
+    walks = [(get_meta(sc, sc["episodes"]), sc) for sc in scenarios.values()]
+    ratios = [  # only the walking scenarios have a meaningful "speed / command" ratio
+        e["forward_speed_mps"] / m["primary_command"]
+        for m, sc in walks
+        if m.get("motion") == "walk" and m.get("primary_command")
+        for e in sc["episodes"]
+        if e.get("forward_speed_mps") is not None
     ]
     contact_eps = [e for e in eps if e.get("trunk_contact_events") is not None]
     ckpt = report.get("checkpoint", "?")
-    ckpt = os.path.join(os.path.basename(os.path.dirname(ckpt)), os.path.basename(ckpt))
+    run_dir, model = os.path.basename(os.path.dirname(ckpt)), os.path.basename(ckpt)
     ok = [e for e in eps if e.get("success")]
     fell = [e for e in eps if outcome(e) == "FELL"]
     ranked = sorted(per_scenario.items(), key=lambda kv_: (kv_[1]["success_rate"], -kv_[1]["fall_rate"]))
     lines = [
         "CONTROLLER OVERVIEW",
-        f"checkpoint {ckpt}",
-        f"task {report.get('task', '?')}",
-        f"date {report.get('date', '?')}   seeds {report.get('seeds', '?')}",
-        f"speed {'scenario default' if report.get('speed_override_mps') is None else str(report['speed_override_mps']) + ' m/s'}",
-        f"{len(scenarios)} scenarios, {n} episodes",
+        kv("run", run_dir[-22:]),
+        kv("model", model[-22:]),
+        kv("task", str(report.get("task", "?"))[-22:]),
+        kv("date", str(report.get("date", "?"))),
+        kv("seeds", str(report.get("seeds", "?"))[:22]),
+        kv("speed", "scenario default" if report.get("speed_override_mps") is None else f"{report['speed_override_mps']} m/s"),
+        kv("scenarios / episodes", f"{len(scenarios)} / {n}"),
         "",
         "TASK",
         kv("success (all episodes)", pct(len(ok) / n if n else None)),
-        kv("success (mean of scenarios)", pct(macro)),
+        kv("success (scenario mean)", pct(macro)),
         kv("fell before goal", pct(len(fell) / n if n else None)),
         kv("timeout", pct((n - len(ok) - len(fell)) / n if n else None)),
         kv("mean time to goal", fmt(mean_of(ok, "time_to_goal_s"), ".1f", "s")),
         "",
         "SPEED TRACKING",
-        kv("forward speed / command", pct(float(np.mean(ratios)) if ratios else None)),
+        kv("speed / command (walks)", pct(float(np.mean(ratios)) if ratios else None)),
         kv("vel error xy", fmt(mean_of(eps, "vel_err_xy_mps"), ".3f", "m/s")),
         kv("vel error yaw", fmt(mean_of(eps, "vel_err_yaw_radps"), ".3f", "rad/s")),
         "",
         "PATH",
-        kv("heading err mean / worst", f"{fmt(mean_of(eps, 'max_yaw_err_deg'), '.1f')} / {fmt(worst_of(eps, 'max_yaw_err_deg'), '.1f')} deg"),
-        kv("lateral mean / worst", f"{fmt(mean_of(eps, 'max_lateral_m'), '.2f')} / {fmt(worst_of(eps, 'max_lateral_m'), '.2f')} m"),
+        kv("heading err mean/worst", f"{fmt(mean_of(eps, 'max_yaw_err_deg'), '.1f')} / {fmt(worst_of(eps, 'max_yaw_err_deg'), '.1f')} deg"),
+        kv("lateral mean/worst", f"{fmt(mean_of(eps, 'max_lateral_m'), '.2f')} / {fmt(worst_of(eps, 'max_lateral_m'), '.2f')} m"),
         "",
         "TRUNK CONTACTS",
         kv("episodes with contact", pct(sum(e["trunk_contact_events"] > 0 for e in contact_eps) / len(contact_eps) if contact_eps else None)),
         kv("events per episode", fmt(mean_of(eps, "trunk_contact_events"), ".2f")),
-        kv("contact time / episode", fmt(mean_of(eps, "trunk_contact_time_s"), ".2f", "s")),
+        kv("contact time / ep.", fmt(mean_of(eps, "trunk_contact_time_s"), ".2f", "s")),
         "",
         "STABILITY / EFFORT",
-        kv("tilt mean / worst", f"{fmt(mean_of(eps, 'mean_tilt_deg'), '.1f')} / {fmt(worst_of(eps, 'max_tilt_deg'), '.1f')} deg"),
+        kv("tilt mean/worst", f"{fmt(mean_of(eps, 'mean_tilt_deg'), '.1f')} / {fmt(worst_of(eps, 'max_tilt_deg'), '.1f')} deg"),
         kv("mean power", fmt(mean_of(eps, "power_w"), ".0f", "W")),
         kv("cost of transport", fmt(mean_of(eps, "cost_of_transport"), ".2f")),
         kv("action rate", fmt(mean_of(eps, "action_rate"), ".2f")),
@@ -647,114 +881,165 @@ def overall_text(report: dict, scenarios: dict) -> list[str]:
         kv("mean total reward", fmt(mean_of(eps, "total_reward"), ".1f")),
         "",
     ]
-    stairs = sorted(((int(m.group(1)), s) for k, s in per_scenario.items() if (m := STAIRS_RE.match(k))), key=lambda p: p[0])
-    if stairs:
-        passed = None  # highest height such that every tested height up to it has success >= 80 %
-        for cm, s_ in stairs:
-            if s_["success_rate"] < 0.8:
-                break
-            passed = cm
-        lines += [
-            "STAIRS (passed = success >= 80 %)",
-            kv("passed up to", f"{passed} cm" if passed else "none"),
-            kv("tested", f"{stairs[0][0]}..{stairs[-1][0]} cm ({len(stairs)} heights)"),
-            "",
-        ]
-    lines.append("WEAKEST SCENARIOS")
+    sweeps = find_sweeps(scenarios)
+    if sweeps:
+        lines.append("SWEEPS (passed: success >= 80 %)" if PASS_RATE == 0.8 else f"SWEEPS (passed: success >= {PASS_RATE:.0%})")
+        for title, curves in sweeps.items():
+            for label, points in curves.items():
+                passed = passed_up_to(points, scenarios)
+                unit = title.rsplit(", ", 1)[1]
+                tested = f"({points[0][0]}..{points[-1][0]})"
+                lines.append(f"  {label[:16]:<16}" + (f"up to {passed} {unit} " if passed is not None else "none passed ") + tested)
+        lines.append("")
+    for m, sc in walks:
+        if m.get("motion") == "sprint_brake":
+            sm = sc["summary"]
+            lines += [
+                "SPRINT AND STOP",
+                kv("peak speed", fmt(sm.get("mean_peak_speed_mps"), ".2f", "m/s")),
+                kv("stopped (episodes)", pct(sm.get("stopped_rate"))),
+                kv("stop time / dist.", f"{fmt(sm.get('mean_stop_time_s'), '.2f')} s / {fmt(sm.get('mean_stop_distance_m'), '.2f')} m"),
+                kv("lowest speed after", fmt(sm.get("lowest_speed_after_brake_mps"), ".2f", "m/s")),
+                "",
+            ]
+            break
+    lines.append("WEAKEST SCENARIOS (success / fell)")
     for k, s in ranked[:5]:
-        lines.append(f"  {k[:30]:<30}{100 * s['success_rate']:>4.0f}% ok {100 * s['fall_rate']:>4.0f}% fell")
+        short = k if len(k) <= 30 else k[:29] + "~"
+        lines.append(f"  {short:<30}{100 * s['success_rate']:>4.0f}%{100 * s['fall_rate']:>5.0f}%")
     return lines
 
 
 def overall_figure(plt, report: dict, scenarios: dict):
+    """Columns: outcomes | speed tracking | trunk contacts (one row per scenario, full height), then the
+    capability sweeps (or the milestone) and the text panel."""
     names = list(scenarios)
     nS = len(names)
-    height = float(np.clip(0.3 * nS + 4.2, 8.6, 15.0))
-    fig = plt.figure(figsize=(16.5, height), facecolor=BG)
-    gs = fig.add_gridspec(
-        2, 3, width_ratios=[1.0, 1.0, 0.82], height_ratios=[1.0, 1.0], left=0.15, right=0.99, top=0.93, bottom=0.06, hspace=0.32, wspace=0.28
-    )  # fmt: skip
-    ax_out = fig.add_subplot(gs[0, 0])
-    ax_sweep = fig.add_subplot(gs[0, 1])
-    ax_trk = fig.add_subplot(gs[1, 0])
-    ax_cnt = fig.add_subplot(gs[1, 1], sharey=ax_trk)
-    ax_tx = fig.add_subplot(gs[:, 2])
-    fig.suptitle("Controller evaluation: whole run", fontsize=13, fontweight="bold", color="#1f4e8c", x=0.15, ha="left")
+    fs = 6.5 if nS > 30 else (7.5 if nS > 14 else 8.5)  # font of the scenario names
+    fig = new_figure(plt, 16.5, float(np.clip(0.16 * nS + 2.4, 7.6, 18.0)))
+    width, height = fig.get_size_inches()
+    sweeps = find_sweeps(scenarios)
+
+    # widths in inches: scenario names, three bar charts, the sweep column, the text panel
+    names_in = min(3.0, max(len(n) for n in names) * fs * 0.62 / 72 + 0.15)
+    text_in, gap = 3.55, 0.12
+    right_col_in = 3.0 if sweeps else 2.2
+    bars_in = (width - names_in - text_in - right_col_in - 0.35 - 4 * gap) / 3
+    top, bottom = 1.0 - 1.15 / height, 0.62 / height
+
+    def col(x_in, w_in):
+        return x_in / width, w_in / width
+
+    x = names_in + 0.1
+    axes_bars = []
+    for i in range(3):
+        cx, cw = col(x, bars_in)
+        axes_bars.append(fig.add_axes([cx, bottom, cw, top - bottom], sharey=axes_bars[0] if axes_bars else None))
+        x += bars_in + gap
+    ax_out, ax_trk, ax_cnt = axes_bars
+    x += 0.25
+    right_x, right_w = col(x, right_col_in)
+    tx, tw = col(width - text_in, text_in - 0.05)
+    ax_tx = fig.add_axes([tx, bottom, tw, top - bottom])
+    # the milestone chart shares the y axis too: it must exist before the scenario names are set
+    ax_mid = None if sweeps else fig.add_axes([right_x, bottom, right_w, top - bottom], sharey=ax_out)
+    fig.suptitle("Controller evaluation: whole run", fontsize=13, fontweight="bold", color="#1f4e8c",
+                 x=0.1 / width, y=1.0 - 0.15 / height, ha="left")  # fmt: skip
     set_window_title(fig, "Whole run - controller evaluation")
-    text_panel(ax_tx, overall_text(report, scenarios), size=8.2)
+    lines = overall_text(report, scenarios)
+    avail_h_pt = (top - bottom) * height * 72
+    longest = max(len(line) for line in lines)
+    size = min(8.0, avail_h_pt / (len(lines) * 1.2), (text_in - 0.1) * 72 / (longest * 0.62))
+    text_panel(ax_tx, lines, size=size)
 
     y = np.arange(nS)
     S = [scenarios[k]["summary"] for k in names]
-    fs = 7.5 if nS > 14 else 8.5
+
+    def scenario_axis(ax, labels: bool):
+        """The charts share one y axis: ticks, names and order are set once, the other charts only hide them."""
+        if labels:
+            ax.set_yticks(y)
+            ax.set_yticklabels(names, fontsize=fs)
+            ax.set_ylim(max(nS, 4) - 0.5, -0.5)  # top to bottom; with few scenarios the bars stay thin
+        else:
+            ax.tick_params(axis="y", length=0, labelleft=False)
+        ax.tick_params(axis="x", labelsize=7.5)
 
     # --- outcomes ---
-    succ = np.array([s["success_rate"] for s in S]) * 100
-    fall = np.array([s["fall_rate"] for s in S]) * 100
-    tmo = np.array([s["timeout_rate"] for s in S]) * 100
-    ax_out.barh(y, succ, color=C_OK, label="success")
-    ax_out.barh(y, fall, left=succ, color=C_FALL, label="fell")
-    ax_out.barh(y, tmo, left=succ + fall, color=C_TIMEOUT, label="timeout")
-    ax_out.set_yticks(y)
-    ax_out.set_yticklabels(names, fontsize=fs)
-    ax_out.invert_yaxis()
+    succ = np.array([s_["success_rate"] for s_ in S]) * 100
+    fall = np.array([s_["fall_rate"] for s_ in S]) * 100
+    tmo = np.array([s_["timeout_rate"] for s_ in S]) * 100
+    ax_out.barh(y, succ, color=C_OK, height=0.72)
+    ax_out.barh(y, fall, left=succ, color=C_FALL, height=0.72)
+    ax_out.barh(y, tmo, left=succ + fall, color=C_TIMEOUT, height=0.72)
     ax_out.set_xlim(0, 100)
-    style_axes(ax_out, "Outcomes", "", "% of episodes")
-    ax_out.legend(loc="lower right", bbox_to_anchor=(1.0, 1.0), fontsize=8, ncol=3, frameon=False)
-
-    # --- stairs sweep ---
-    stairs = sorted(((int(m.group(1)), k) for k in names if (m := STAIRS_RE.match(k))))
-    if len(stairs) >= 2:
-        cms = [c for c, _ in stairs]
-        ax_sweep.plot(cms, [scenarios[k]["summary"]["success_rate"] * 100 for _, k in stairs], "o-", color=C_OK, lw=2, label="crossed the whole pyramid")
-        ax_sweep.plot(cms, [scenarios[k]["summary"]["midpoint_rate"] * 100 for _, k in stairs], "s--", color=C_SPEED, lw=1.4, label="reached the top")
-        ax_sweep.plot(cms, [scenarios[k]["summary"]["fall_rate"] * 100 for _, k in stairs], "x:", color=C_FALL, lw=1.4, label="fell")
-        ax_sweep.set_ylim(-3, 103)
-        ax_sweep.set_xticks(cms)
-        style_axes(ax_sweep, "Capability vs. step height", "% of episodes", "step height, cm")
-        ax_sweep.legend(loc="upper center", bbox_to_anchor=(0.5, -0.17), fontsize=8, ncol=3, frameon=False)
-        passed = None
-        for cm, k in stairs:
-            if scenarios[k]["summary"]["success_rate"] < 0.8:
-                break
-            passed = cm
-        if passed is not None:
-            ax_sweep.axvspan(cms[0] - 0.5, passed + 0.5, color=C_OK, alpha=0.08, lw=0)
-    else:
-        mid = np.array([s["midpoint_rate"] for s in S]) * 100
-        ax_sweep.barh(y, mid, color=C_SPEED)
-        ax_sweep.set_yticks(y)
-        ax_sweep.set_yticklabels(names, fontsize=fs)
-        ax_sweep.invert_yaxis()
-        ax_sweep.set_xlim(0, 100)
-        style_axes(ax_sweep, "Reached the midpoint (top / bottom / center)", "", "% of episodes")
+    scenario_axis(ax_out, True)
+    style_axes(ax_out, "Outcomes", "", "% of episodes", subtitle="green = success, red = fell,\namber = timeout")
 
     # --- speed tracking ---
     ratio = []
     for k in names:
-        cmd = get_meta(scenarios[k], scenarios[k]["episodes"]).get("command_speed_mps")
+        meta = get_meta(scenarios[k], scenarios[k]["episodes"])
+        cmd = meta.get("primary_command")
         v = scenarios[k]["summary"].get("mean_forward_speed_mps")
-        ratio.append(np.nan if not cmd or v is None else 100.0 * v / cmd)
-    ax_trk.barh(y, np.nan_to_num(ratio), color=C_SPEED)
+        walk = meta.get("motion") == "walk"  # a turn or a sprint-and-stop has no meaningful mean speed
+        ratio.append(np.nan if not walk or not cmd or v is None else 100.0 * v / cmd)
+    ax_trk.barh(y, np.nan_to_num(ratio), color=C_SPEED, height=0.72)
     ax_trk.axvline(100, color=C_CMD, ls="--", lw=1.2)
-    for yi, s in zip(y, S):
-        e = s.get("mean_vel_err_xy_mps")
-        if e is not None:
-            ax_trk.text(1, yi, f"err {e:.2f} m/s", va="center", ha="left", fontsize=fs - 1, color="white")
-    ax_trk.set_yticks(y)
-    ax_trk.set_yticklabels(names, fontsize=fs)
-    ax_trk.invert_yaxis()
-    style_axes(ax_trk, "Speed tracking (mean forward speed / command)", "", "% of the commanded speed")
+    ax_trk.set_xlim(0, max(105.0, float(np.nanmax(np.nan_to_num(ratio))) * 1.05))
+    for yi, s_, r in zip(y, S, ratio):
+        e = s_.get("mean_vel_err_xy_mps")
+        if not np.isfinite(r):
+            ax_trk.text(2, yi, "n/a", va="center", ha="left", fontsize=fs - 1, color="#555555")
+        elif e is not None:  # inside the bar if it is long enough, otherwise right of it
+            inside = r > 45
+            ax_trk.text(2 if inside else r + 2, yi, f"err {e:.2f}", va="center", ha="left", fontsize=fs - 1,
+                        color="white" if inside else "#333333")  # fmt: skip
+    scenario_axis(ax_trk, False)
+    style_axes(ax_trk, "Speed tracking", "", "% of the commanded speed", subtitle="mean speed / command;\nerr = velocity error, m/s")
 
     # --- trunk contacts ---
-    events = [s.get("mean_trunk_contacts_per_episode") for s in S]
-    rate = [s.get("trunk_contact_episode_rate") for s in S]
-    ax_cnt.barh(y, [e or 0.0 for e in events], color=C_CONTACT)
+    events = [s_.get("mean_trunk_contacts_per_episode") for s_ in S]
+    rate = [s_.get("trunk_contact_episode_rate") for s_ in S]
+    ax_cnt.barh(y, [e or 0.0 for e in events], color=C_CONTACT, height=0.72)
     for yi, e, r in zip(y, events, rate):
-        if e is not None:
-            ax_cnt.text(max(e, 0.0), yi, f" {pct(r)} of episodes", va="center", ha="left", fontsize=fs - 1, color="#333333")
-    plt.setp(ax_cnt.get_yticklabels(), visible=False)
-    style_axes(ax_cnt, "Trunk contacts", "", "events per episode")
+        if e is not None and e > 0:
+            ax_cnt.text(e, yi, f" {pct(r)}", va="center", ha="left", fontsize=fs - 1, color="#333333")
+    scenario_axis(ax_cnt, False)
+    style_axes(ax_cnt, "Trunk contacts", "", "events per episode", subtitle="% = share of the episodes\nwith a contact")
     ax_cnt.set_xlim(0, max(1.0, max([e or 0.0 for e in events] + [0.0])) * 1.45)
+
+    # --- right column: capability sweeps (stairs height, slope angle, block difficulty) or the milestone ---
+    if sweeps:
+        n_sw = len(sweeps)
+        slot = (top - bottom) / n_sw
+        palette = [C_OK, C_SPEED, C_YAW]
+        for row, (title, curves) in enumerate(sweeps.items()):
+            y0 = top - (row + 1) * slot
+            ax = fig.add_axes([right_x, y0 + 0.62 / height, right_w, slot - 1.25 / height])
+            xs_all = []
+            for c, (label, points) in enumerate(curves.items()):
+                xs = [x_ for x_, _ in points]
+                xs_all += xs
+                ok = [scenarios[k]["summary"]["success_rate"] * 100 for _, k in points]
+                ax.plot(xs, ok, "os"[c % 2] + "-", color=palette[c % 3], lw=1.8, ms=4, label=label)
+                ax.plot(xs, [scenarios[k]["summary"]["fall_rate"] * 100 for _, k in points], ":", color=palette[c % 3], lw=1.1, alpha=0.8)
+            ax.set_ylim(-5, 105)
+            ax.set_xticks(sorted(set(xs_all)))
+            ax.tick_params(labelsize=7)
+            style_axes(ax, title.split(":")[0], "%", title.split(": ")[1], subtitle="solid = success, dotted = fell")
+            if len(curves) > 1:
+                ax.legend(loc="lower left", fontsize=6.5, framealpha=0.85, handlelength=1.4)
+    else:
+        has_mid = [get_meta(scenarios[k], scenarios[k]["episodes"]).get("midpoint_x") is not None for k in names]
+        mid = np.array([s_["midpoint_rate"] if h else 0.0 for s_, h in zip(S, has_mid)]) * 100
+        ax_mid.barh(y, mid, color=C_SPEED, height=0.72)
+        for yi, h in zip(y, has_mid):
+            if not h:  # flat ground, turn, sprint: no milestone on the course
+                ax_mid.text(2, yi, "n/a", va="center", ha="left", fontsize=fs - 1, color="#555555")
+        ax_mid.set_xlim(0, 100)
+        scenario_axis(ax_mid, False)
+        style_axes(ax_mid, "Midpoint reached", "", "% of episodes", subtitle="top of a pyramid, bottom\nof a pit, centre of blocks")
     return fig
 
 
@@ -794,7 +1079,12 @@ def main(argv=None):
     ap.add_argument("--max_windows", type=int, default=40, help="Open at most this many windows at once (default 40).")
     ap.add_argument("--save", default=None, help="Save every figure as PNG into this folder.")
     ap.add_argument("--no_show", action="store_true", help="Do not open windows (use with --save).")
+    ap.add_argument(
+        "--dpi", type=float, default=None,
+        help="Scale of the windows (default: fitted to the screen, at most 100). Lower = smaller windows.",
+    )  # fmt: skip
     args = ap.parse_args(argv)
+    SCREEN["dpi"] = args.dpi
 
     with open(args.report, encoding="utf-8") as f:
         report = json.load(f)
@@ -818,6 +1108,10 @@ def main(argv=None):
     except ImportError:
         sys.exit("[ERROR] matplotlib is required: pip install matplotlib")
     plt.rcParams.update({"font.size": 9, "axes.facecolor": "white", "figure.facecolor": BG, "savefig.facecolor": BG})
+    if show:
+        size = screen_size()
+        if size:
+            SCREEN["w"], SCREEN["h"] = size
     if save_dir:
         os.makedirs(save_dir, exist_ok=True)
 

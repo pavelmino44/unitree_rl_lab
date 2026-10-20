@@ -12,7 +12,7 @@ Two ways to start it (run from the unitree_rl_lab root, in the conda env):
 
 Examples:
     # watch the scene like in play.py, metrics are printed per episode and as tables at the end
-    python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --scenarios stairs_up_10cm --real-time
+    python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --scenarios rough_pyramid_stairs_10cm --real-time
 
     # all obstacles of ROUGH_TERRAINS_CFG, 3 terrain realizations, no window
     python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless \
@@ -22,16 +22,20 @@ Examples:
     python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "rough_boxes*,flat"
 
     # another commanded speed, and let the episode go on after the trunk touches the ground
-    python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "stairs_up_*" \
+    python scripts/rsl_rl/evaluate.py --task Unitree-Go2-Velocity --headless --scenarios "rough_pyramid_stairs_*cm" \
         --speed 0.3 --no_contact_termination
 
---scenarios accepts: exact names, glob patterns (``stairs_up_*``), ``rough`` (= ``rough_*``) and ``all``.
+--scenarios accepts: exact names, glob patterns (rough_pyramid_stairs_*cm, flat*), rough (= rough_*) and all.
 --eval_seed accepts a comma-separated list. The seed controls the terrain realization of the randomized
 obstacles (boxes, random_rough); episodes of all seeds of a scenario are pooled in the summary.
 --speed sets the commanded forward speed in m/s (default: 0.5, the value built into the scenarios).
 --no_contact_termination removes the training termination on trunk contact, so that the whole episode is
 observed and every trunk contact can be shown on the timeline (by default one contact ends the episode,
 exactly as in training).
+
+Scenario kinds (see eval_scenarios.py): walking along a course (forward, backward, sideways, obstacles),
+turning on the spot (progress in degrees) and the sprint with a sudden stop (flat_max_speed: it ignores --speed
+and uses the maximum speed of the training range; success = the robot survives and comes to a stop).
 
 When the runs are finished the report viewer (eval_report.py) opens: one window per episode (speed vs. time
 with the commanded speed, trunk-contact timeline, all numbers), one window per scenario (averages over its
@@ -43,7 +47,8 @@ Metrics (per scenario, over all pooled episodes)
   Task:        success_rate (goal line crossed; for pyramids: the far side = climb AND descent),
                midpoint_rate (top / bottom / center reached), fall_rate (terminated before the goal),
                timeout_rate, mean_time_to_goal_s, mean_progress_m
-  Path:        max_yaw_err_deg (heading vs. target), max_lateral_m (sideways deviation from the start line)
+  Path:        max_yaw_err_deg (heading vs. target), max_lateral_m (sideways deviation from the start line;
+               for the turn on the spot: drift from the start point)
   Tracking:    vel_err_xy_mps, vel_err_yaw_radps (commanded vs. measured base velocity, body frame),
                forward_speed_mps
   Efficiency:  mean_power_w (sum |torque * joint_vel|), cost_of_transport (E / (m g d))
@@ -51,6 +56,8 @@ Metrics (per scenario, over all pooled episodes)
   Stability:   tilt_deg (angle between base z-axis and gravity: mean and max)
   Trunk contact: events (contacts closer than 0.1 s count as one), contact time, first contact, max force;
                "trunk" = the bodies and force threshold of the training termination (e.g. base_contact)
+  Sprint/brake (flat_max_speed): peak_speed, time to 90 % of the command, speed at the stop command,
+               stop time (speed < 0.1 m/s for 0.5 s), stop distance and the largest roll-back after it
   Time series: every episode stores a down-sampled (--record_dt, default 0.1 s) time series of the speed,
                command, position, heading error, tilt, power and trunk contact for the report viewer
   Training-like: total_reward per episode, reward_terms_per_s (each reward term averaged per second, the
@@ -103,7 +110,13 @@ SERIES_CHANNELS = (
     "contact",  # 1 while the trunk is in contact
 )  # fmt: skip
 CONTACT_COL, FORCE_COL = SERIES_CHANNELS.index("contact"), SERIES_CHANNELS.index("contact_force_n")
+X_COL = SERIES_CHANNELS.index("x")
 CONTACT_MERGE_GAP_S = 0.1  # trunk contacts closer than this count as one event
+STOP_SPEED_MPS, STOP_HOLD_S = 0.1, 0.5  # "stopped" = |speed| below this for this long
+SPRINT_KEYS = (
+    "peak_speed_mps", "time_to_90pct_s", "speed_at_brake_mps", "stop_time_s", "stop_distance_m",
+    "min_speed_after_brake_mps",
+)  # fmt: skip
 CONTACT_KEYS = (
     "trunk_contact_events", "trunk_contact_time_s", "first_trunk_contact_s",
     "max_trunk_contact_force_n", "trunk_contact_intervals_s",
@@ -117,7 +130,7 @@ def _runs(mask: np.ndarray) -> list[tuple[int, int]]:
 
 
 def contact_intervals(mask: np.ndarray, dt: float, merge_gap_s: float = CONTACT_MERGE_GAP_S) -> list[list[float]]:
-    """Time intervals (s) in which ``mask`` (one value per control step) is True; close ones are merged."""
+    """Time intervals (s) in which mask (one value per control step) is True; close ones are merged."""
     gap = int(round(merge_gap_s / dt))
     merged: list[list[int]] = []
     for start, end in _runs(mask):
@@ -128,14 +141,55 @@ def contact_intervals(mask: np.ndarray, dt: float, merge_gap_s: float = CONTACT_
     return [[start * dt, end * dt] for start, end in merged]
 
 
+def sprint_metrics(arr: np.ndarray, dt: float, brake_t: float, v_cmd: float) -> dict:
+    """Metrics of "accelerate to v_cmd, command 0 at brake_t" from the full-rate rows (see SERIES_CHANNELS).
+
+    peak speed and time to 90 % of v_cmd (up to the stop command), the speed at the stop command and, after it,
+    the stop time (|speed| < STOP_SPEED_MPS for STOP_HOLD_S), the distance travelled until then and the lowest
+    speed afterwards (negative = the robot rolled back). Keys are None when the episode ended too early.
+    """
+    out = dict.fromkeys(SPRINT_KEYS)
+    vx, x = arr[:, 0], arr[:, X_COL]
+    n = len(arr)
+    t = (np.arange(n) + 1) * dt
+    run = np.isfinite(vx) & (t <= brake_t + 1e-9)
+    if run.any():
+        out["peak_speed_mps"] = float(vx[run].max())
+        hit = np.flatnonzero(run & (vx >= 0.9 * v_cmd))
+        out["time_to_90pct_s"] = float(t[hit[0]]) if hit.size else None
+    kb = int(round(brake_t / dt))  # index of the first step that is driven by the stop command
+    if kb < 1 or n <= kb:
+        return out
+    out["speed_at_brake_mps"] = float(vx[kb - 1]) if np.isfinite(vx[kb - 1]) else None
+    after = vx[kb:]
+    if np.isfinite(after).any():
+        out["min_speed_after_brake_mps"] = float(np.nanmin(after))
+    hold = max(1, int(round(STOP_HOLD_S / dt)))
+    slow = np.isfinite(after) & (np.abs(after) < STOP_SPEED_MPS)
+    if slow.size >= hold:
+        csum = np.concatenate(([0], np.cumsum(slow)))
+        starts = np.flatnonzero(csum[hold:] - csum[:-hold] == hold)  # first window of `hold` slow steps
+        if starts.size:
+            j = int(starts[0])
+            out["stop_time_s"] = j * dt
+            if np.isfinite(x[kb + j]) and np.isfinite(x[kb - 1]):
+                out["stop_distance_m"] = float(x[kb + j] - x[kb - 1])
+    return out
+
+
 def _jsonable(column: np.ndarray, digits: int = 4) -> list:
     return [round(float(v), digits) if np.isfinite(v) else None for v in column]
 
 
-def finalize_episode(rows: list, dt: float, record_dt: float) -> tuple[dict, dict]:
-    """Turn the per-step rows of one finished episode into (time series for the report, contact metrics).
+def finalize_episode(
+    rows: list, dt: float, record_dt: float, brake_time_s: float | None = None, v_cmd: float | None = None
+) -> tuple[dict, dict]:
+    """Turn the per-step rows of one finished episode into (time series for the report, metrics).
 
-    The series is down-sampled to ``record_dt``: block means, except the contact force and the contact flag,
+    The metrics are the trunk-contact metrics and, if brake_time_s is given (sprint with a sudden stop),
+    the sprint/brake metrics.
+
+    The series is down-sampled to record_dt: block means, except the contact force and the contact flag,
     which use the block maximum so that a short contact is never lost. The contact metrics are computed
     from the full-rate data.
     """
@@ -151,6 +205,8 @@ def finalize_episode(rows: list, dt: float, record_dt: float) -> tuple[dict, dic
         "max_trunk_contact_force_n": float(force.max()) if force.size else None,
         "trunk_contact_intervals_s": [[round(a, 3), round(b, 3)] for a, b in intervals],
     }
+    if brake_time_s is not None and v_cmd:
+        metrics.update(sprint_metrics(arr, dt, brake_time_s, v_cmd))
 
     k = max(1, int(round(record_dt / dt)))
     blocks = -(-steps // k)
@@ -222,11 +278,32 @@ def summarize(episodes: list[dict]) -> dict:
         ),
         "mean_trunk_contact_time_s": mean_of("trunk_contact_time_s"),
         "worst_trunk_contact_force_n": worst_of("max_trunk_contact_force_n"),
+        # sprint with a sudden stop (None for the other scenarios)
+        "mean_peak_speed_mps": mean_of("peak_speed_mps"),
+        "mean_time_to_90pct_s": mean_of("time_to_90pct_s"),
+        "mean_speed_at_brake_mps": mean_of("speed_at_brake_mps"),
+        "mean_stop_time_s": mean_of("stop_time_s"),
+        "mean_stop_distance_m": mean_of("stop_distance_m"),
+        "lowest_speed_after_brake_mps": (
+            min(e["min_speed_after_brake_mps"] for e in episodes if e.get("min_speed_after_brake_mps") is not None)
+            if any(e.get("min_speed_after_brake_mps") is not None for e in episodes) else None
+        ),
+        "stopped_rate": (
+            sum(e.get("stop_time_s") is not None for e in episodes) / n
+            if any("peak_speed_mps" in e for e in episodes) else None
+        ),
         # training-like
         "mean_total_reward": mean_of("total_reward"),
         "reward_terms_per_s": {k: _mean(e.get("reward_terms_per_s", {}).get(k) for e in episodes) for k in term_keys},
         "end_reasons": dict(Counter(e.get("end_reason", "unknown") for e in episodes)),
     }
+
+
+def _fp(value, meta: dict) -> str:
+    """Progress with its unit: metres along the course, or degrees for a turn on the spot."""
+    if value is None:
+        return "-"
+    return f"{value:.0f} deg" if (meta or {}).get("progress_unit") == "deg" else f"{value:.2f} m"
 
 
 def print_tables(results: dict):
@@ -242,14 +319,16 @@ def print_tables(results: dict):
     print("-" * (w + 100))
     for name, r in results.items():
         s = r["summary"]
+        has_milestone = (r.get("meta") or {}).get("midpoint_x", 0.0) is not None  # flat ground / sprint: no milestone
+        mid_txt = f"{s['midpoint_rate']:.0%}" if has_milestone else "-"
         print(
-            f"{name:<{w}}{s['episodes']:>9}{s['success_rate']:>9.0%}{s['midpoint_rate']:>10.0%}"
+            f"{name:<{w}}{s['episodes']:>9}{s['success_rate']:>9.0%}{mid_txt:>10}"
             f"{s['fall_rate']:>7.0%}{s['timeout_rate']:>10.0%}{_f(s['mean_time_to_goal_s'], '.1f'):>11}"
-            f"{_f(s['mean_progress_m'], '.2f'):>13}{_f(s['worst_max_yaw_err_deg'], '.1f'):>14}"
+            f"{_fp(s['mean_progress_m'], r.get('meta')):>13}{_f(s['worst_max_yaw_err_deg'], '.1f'):>14}"
             f"{_f(s['worst_max_lateral_m'], '.2f'):>12}"
         )
     print(line)
-    print("yaw err / lateral: worst case over episodes")
+    print("yaw err / lateral: worst case over episodes (turn on the spot: lateral = drift from the start point)")
 
     # --- table 2: motion quality ---------------------------------------------------------------
     line = "=" * (w + 123)
@@ -270,8 +349,29 @@ def print_tables(results: dict):
             f"{_f(s['trunk_contact_episode_rate'], '.0%'):>11}"
         )
     print(line)
-    print("vel err: m/s and rad/s | speed: m/s along +x | tilt max: deg, worst case | reward: mean sum per episode")
+    print("vel err: m/s and rad/s | speed: along the commanded direction (m/s) | tilt max: deg, worst case | reward: mean sum per episode")
     print("contacts/ep: trunk contact events per episode | w/ contact: share of episodes with a trunk contact")
+
+    # --- sprint with a sudden stop ----------------------------------------------------------------
+    sprint = {k: r for k, r in results.items() if r["summary"].get("mean_peak_speed_mps") is not None}
+    if sprint:
+        line = "=" * (w + 87)
+        print("\n" + line)
+        print(
+            f"{'scenario (sprint + stop)':<{w}}{'peak, m/s':>11}{'t to 90%, s':>13}{'at brake':>10}{'stop time':>11}"
+            f"{'stop dist':>11}{'lowest':>9}{'stopped':>9}"
+        )
+        print("-" * (w + 87))
+        for name, r in sprint.items():
+            s = r["summary"]
+            print(
+                f"{name:<{w}}{_f(s['mean_peak_speed_mps'], '.2f'):>11}{_f(s['mean_time_to_90pct_s'], '.1f'):>13}"
+                f"{_f(s['mean_speed_at_brake_mps'], '.2f'):>10}{_f(s['mean_stop_time_s'], '.2f'):>11}"
+                f"{_f(s['mean_stop_distance_m'], '.2f'):>11}{_f(s['lowest_speed_after_brake_mps'], '.2f'):>9}"
+                f"{_f(s['stopped_rate'], '.0%'):>9}"
+            )
+        print(line)
+        print("speeds in m/s | stop time: s from the stop command until |v| < 0.1 m/s for 0.5 s | stop dist: m | lowest: min speed after the command (negative = rolled back)")
 
     # --- end reasons -----------------------------------------------------------------------------
     print("\nEpisode end reasons:")
@@ -282,7 +382,7 @@ def print_tables(results: dict):
 
 
 def _drop_args(argv: list[str], flags: set[str]) -> list[str]:
-    """Remove ``--flag value`` and ``--flag=value`` pairs from an argv list."""
+    """Remove --flag value and --flag=value pairs from an argv list."""
     out, skip = [], False
     for a in argv:
         if skip:
@@ -392,7 +492,7 @@ _check_args(args_cli)
 
 
 def _catalog_cmd(path: str) -> list[str]:
-    """Command that writes the scenario/task catalog to ``path`` (starts a short headless Isaac Sim)."""
+    """Command that writes the scenario/task catalog to path (starts a short headless Isaac Sim)."""
     return [sys.executable, os.path.abspath(__file__), "--headless", "--list_scenarios_to", path]
 
 
@@ -615,6 +715,10 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
     origin_x = unwrapped.scene.env_origins[:, 0].clone()
     origin_y = unwrapped.scene.env_origins[:, 1].clone()
     n, dev, dt = unwrapped.num_envs, unwrapped.device, unwrapped.step_dt
+    dir_x, dir_y = sc.course_dir  # world direction of travel: progress = position . dir, lateral = position x dir
+    spawn_px, spawn_py = sc.spawn_x * dir_x, sc.spawn_x * dir_y
+    is_turn = sc.motion == "turn"
+    rot_sign = -1.0 if sc.wz < 0.0 else 1.0
 
     reward_names = list(rew_mgr.active_terms)
     done_names = list(term_mgr.active_terms)
@@ -645,6 +749,8 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
     max_x = torch.full((n,), _UNSET, device=dev)
     reached_mid = torch.zeros(n, dtype=torch.bool, device=dev)
     max_yaw_err, max_lat, max_tilt = zeros(), zeros(), zeros()
+    yaw_total = zeros()  # turn on the spot: total rotation since the start of the episode (rad)
+    prev_heading = torch.full((n,), sc.heading, device=dev)
     sums = {k: zeros() for k in ("vel_err_xy", "vel_err_yaw", "fwd_speed", "power", "action_rate", "joint_acc", "tilt")}
     total_reward = zeros()
     term_sums = torch.zeros(n, max(len(reward_names), 1), device=dev)
@@ -656,12 +762,24 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         obs, _ = env.get_observations()
 
     # sanity check of the spawn pose (x relative to tile centre, z in world frame)
-    x0 = (robot.data.root_pos_w[0, 0] - origin_x[0]).item()
+    dx0 = (robot.data.root_pos_w[0, 0] - origin_x[0]).item()
+    dy0 = (robot.data.root_pos_w[0, 1] - origin_y[0]).item()
+    x0 = dx0 * dir_x + dy0 * dir_y
     z0 = robot.data.root_pos_w[0, 2].item()
+    goal_txt = "none (fixed duration)" if sc.goal_x is None else (f"{sc.goal_x:.0f} deg" if is_turn else f"{sc.goal_x:.2f} m")
+    if sc.motion == "sprint_brake":
+        command_txt = f"0 -> {sc.vx:.2f} m/s (maximum of the training range), stop command at {sc.brake_time_s:.0f} s"
+    elif is_turn:
+        command_txt = f"{sc.wz:.2f} rad/s ({sc.speed_label})"
+    else:
+        command_txt = f"{sc.primary_command:.2f} m/s ({sc.speed_label})"
     print(f"[INFO] [{name}] seed {seed}: {sc.description}")
-    print(f"[INFO] [{name}] spawn x={x0:.2f} m (rel. to tile centre), z={z0:.2f} m (world); goal x={sc.goal_x:.2f} m")
     print(
-        f"[INFO] [{name}] command: {sc.vx:.2f} m/s forward, running {args_cli.episodes} episodes, "
+        f"[INFO] [{name}] spawn {x0:.2f} {sc.progress_unit} along the course (rel. to tile centre), "
+        f"z={z0:.2f} m (world); goal {goal_txt}"
+    )
+    print(
+        f"[INFO] [{name}] command: {command_txt}; running {args_cli.episodes} episodes, "
         f"up to {sc.episode_length_s:.0f} s each",
         flush=True,
     )
@@ -688,28 +806,45 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         if prev_actions is None:
             prev_actions = torch.zeros_like(actions)
 
+        done = dones.bool()
+        timeout = extras["time_outs"].bool()
+        alive = ~done
+
         # --- state after the step ---
-        x = (robot.data.root_pos_w[:, 0] - origin_x).clone()
-        y = (robot.data.root_pos_w[:, 1] - origin_y).clone()
-        yaw_err = wrap_to_pi(robot.data.heading_w - sc.heading).abs().clone()
+        px = robot.data.root_pos_w[:, 0] - origin_x  # position relative to the tile centre, world frame
+        py = robot.data.root_pos_w[:, 1] - origin_y
+        heading = robot.data.heading_w
+        if is_turn:
+            # progress = total rotation in the commanded direction (deg), lateral = drift from the start point
+            yaw_total = torch.where(alive, yaw_total + wrap_to_pi(heading - prev_heading), yaw_total)
+            prev_heading = torch.where(alive, heading, prev_heading)
+            x = torch.rad2deg(yaw_total) * rot_sign
+            y = ((px - spawn_px) ** 2 + (py - spawn_py) ** 2) ** 0.5
+            yaw_err = torch.full_like(px, float("nan"))  # the heading is not held: no heading error
+        else:
+            x = px * dir_x + py * dir_y  # progress along the course
+            y = py * dir_x - px * dir_y  # lateral deviation (left of the course is positive)
+            yaw_err = wrap_to_pi(heading - sc.heading).abs()
         lin_b, ang_b = robot.data.root_lin_vel_b, robot.data.root_ang_vel_b
         vel_err_xy = torch.norm(cmd[:, :2] - lin_b[:, :2], dim=-1)
         vel_err_yaw = (cmd[:, 2] - ang_b[:, 2]).abs()
-        fwd_speed = robot.data.root_lin_vel_w[:, 0]
+        if sc.primary_channel == "vx":  # speed along the commanded direction (backward walk: positive when walking back)
+            fwd_speed = lin_b[:, 0] * sc.primary_sign
+        elif sc.primary_channel == "vy":
+            fwd_speed = lin_b[:, 1] * sc.primary_sign
+        else:
+            fwd_speed = torch.zeros_like(px)
         power = (robot.data.applied_torque * robot.data.joint_vel).abs().sum(dim=-1)
         action_rate = torch.norm(actions - prev_actions, dim=-1)
         joint_acc = torch.norm(robot.data.joint_acc, dim=-1)
         tilt = torch.acos(torch.clamp(-robot.data.projected_gravity_b[:, 2], -1.0, 1.0))
 
-        done = dones.bool()
-        timeout = extras["time_outs"].bool()
         # flags of the termination terms of THIS step (they survive the automatic reset)
-        goal_hit = term_mgr.get_term("goal_reached").bool()
+        goal_hit = term_mgr.get_term("goal_reached").bool() if "goal_reached" in done_names else torch.zeros_like(done)
         flags = term_contact = None
         if done.any():
             flags = torch.stack([term_mgr.get_term(nm).bool() for nm in done_names], dim=1)
             term_contact = flags[:, contact_cols].any(dim=1) if contact_cols else torch.zeros_like(done)
-        alive = ~done
         zero = torch.zeros_like(x)
 
         # rewards of the terminating step belong to the ending episode (they are computed before the reset)
@@ -719,7 +854,8 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
         # kinematic quantities after a reset belong to the next episode, so only use alive envs
         max_x = torch.where(alive, torch.maximum(max_x, x), max_x)
-        max_yaw_err = torch.where(alive, torch.maximum(max_yaw_err, yaw_err), max_yaw_err)
+        if not is_turn:
+            max_yaw_err = torch.where(alive, torch.maximum(max_yaw_err, yaw_err), max_yaw_err)
         max_lat = torch.where(alive, torch.maximum(max_lat, y.abs()), max_lat)
         max_tilt = torch.where(alive, torch.maximum(max_tilt, tilt), max_tilt)
         for key, value in (
@@ -759,9 +895,18 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
 
         if done.any():
             for i in done.nonzero().flatten().tolist():
-                success = bool(goal_hit[i])
+                series, ep_metrics = finalize_episode(
+                    rows[i], dt, rec_every_s,
+                    brake_time_s=sc.brake_time_s if sc.motion == "sprint_brake" else None, v_cmd=sc.vx,
+                )  # fmt: skip
+                rows[i] = []
+                if contact is None:
+                    ep_metrics.update({key: None for key in CONTACT_KEYS})
+                # success: the goal line / the full turn, or (sprint) surviving the episode AND coming to a stop
+                survived_and_stopped = sc.success_on_timeout and bool(timeout[i]) and ep_metrics.get("stop_time_s") is not None
+                success = bool(goal_hit[i]) or survived_and_stopped
                 best_x = max_x[i].item() if max_x[i].item() > _UNSET / 2 else sc.spawn_x
-                if success:  # the pose of the terminating step is already reset, but the goal line was crossed
+                if success and sc.goal_x is not None:  # the pose of the terminating step is already reset
                     best_x = max(best_x, sc.goal_x)
                 progress = best_x - sc.spawn_x
                 duration = float(steps[i] * dt)
@@ -769,26 +914,22 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                 mean_power = float(sums["power"][i]) / k
                 energy = mean_power * k * dt
                 cot = None
-                if mass is not None and progress > 0.5:
+                if mass is not None and not is_turn and progress > 0.5:
                     cot = energy / (float(mass[i]) * _GRAVITY * progress)
                 reasons = [nm for j, nm in enumerate(done_names) if bool(flags[i, j])]
-                series, contact_metrics = finalize_episode(rows[i], dt, rec_every_s)
-                rows[i] = []
-                if contact is None:
-                    contact_metrics = {key: None for key in CONTACT_KEYS}
                 ep = {
                     "seed": seed,
                     "success": success,
                     "fell_before_goal": bool((not timeout[i]) and (not success)),
                     "reached_midpoint": success or (bool(reached_mid[i]) if sc.midpoint_x is not None else False),
-                    "time_to_goal_s": duration if success else None,
+                    "time_to_goal_s": duration if (success and not sc.success_on_timeout) else None,
                     "duration_s": duration,
-                    "progress_m": progress,
-                    "max_yaw_err_deg": float(torch.rad2deg(max_yaw_err[i])),
+                    "progress_m": progress,  # metres along the course; degrees for the turn on the spot (meta.progress_unit)
+                    "max_yaw_err_deg": None if is_turn else float(torch.rad2deg(max_yaw_err[i])),
                     "max_lateral_m": float(max_lat[i]),
                     "vel_err_xy_mps": float(sums["vel_err_xy"][i]) / k,
                     "vel_err_yaw_radps": float(sums["vel_err_yaw"][i]) / k,
-                    "forward_speed_mps": float(sums["fwd_speed"][i]) / k,
+                    "forward_speed_mps": None if is_turn else float(sums["fwd_speed"][i]) / k,
                     "power_w": mean_power,
                     "cost_of_transport": cot,
                     "action_rate": float(sums["action_rate"][i]) / k,
@@ -798,17 +939,27 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
                     "total_reward": float(total_reward[i]),
                     "reward_terms_per_s": {nm: float(term_sums[i, j]) / duration for j, nm in enumerate(reward_names)},
                     "end_reason": "+".join(sorted(reasons)) if reasons else ("time_out" if timeout[i] else "unknown"),
-                    "command_speed_mps": sc.vx,
-                    **contact_metrics,
+                    "command_speed_mps": None if is_turn else sc.primary_command,
+                    **ep_metrics,
                     "series": series,
                 }
                 episodes.append(ep)
                 verdict = "SUCCESS" if success else ("FELL" if ep["fell_before_goal"] else "TIMEOUT")
                 mid = f" {sc.midpoint_label}={'yes' if ep['reached_midpoint'] else 'no'}" if sc.midpoint_x is not None else ""
+                prog_txt = f"{progress:.0f}deg" if is_turn else f"{progress:.2f}m"
+                yaw_txt = "n/a" if is_turn else f"{ep['max_yaw_err_deg']:.1f}deg"
+                lat_txt = "drift" if is_turn else "lateral"
+                sprint_txt = ""
+                if ep.get("peak_speed_mps") is not None:
+                    stop = ep.get("stop_time_s")
+                    sprint_txt = (
+                        f" peak={ep['peak_speed_mps']:.2f}m/s stop_time="
+                        + (f"{stop:.2f}s" if stop is not None else "not stopped")
+                    )
                 print(
                     f"[{name}] episode {len(episodes)}/{args_cli.episodes}: {verdict:<8} "
-                    f"time={duration:.1f}s progress={progress:.2f}m{mid} yaw_err={ep['max_yaw_err_deg']:.1f}deg "
-                    f"lateral={ep['max_lateral_m']:.2f}m vel_err={ep['vel_err_xy_mps']:.2f}m/s "
+                    f"time={duration:.1f}s progress={prog_txt}{mid}{sprint_txt} yaw_err={yaw_txt} "
+                    f"{lat_txt}={ep['max_lateral_m']:.2f}m vel_err={ep['vel_err_xy_mps']:.2f}m/s "
                     f"trunk_contacts={ep['trunk_contact_events'] if ep['trunk_contact_events'] is not None else '-'} "
                     f"reward={ep['total_reward']:.1f} end={ep['end_reason']}",
                     flush=True,
@@ -821,6 +972,8 @@ def run_scenario(name: str, seed: int, agent_cfg, resume_path: str) -> dict:
         max_x[done] = _UNSET
         reached_mid[done] = False
         max_yaw_err[done] = 0.0
+        yaw_total[done] = 0.0
+        prev_heading[done] = sc.heading
         max_lat[done] = 0.0
         max_tilt[done] = 0.0
         total_reward[done] = 0.0

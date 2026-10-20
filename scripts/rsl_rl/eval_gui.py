@@ -379,7 +379,7 @@ class EvalGui:
         presets = ttk.Frame(left)
         presets.grid(row=1, column=0, sticky="ew", **pad)
         ttk.Label(presets, text="Quick:").pack(side="left")
-        for label, pattern in (("all", ""), ("rough", "rough_*"), ("stairs", "stairs_up_*"), ("slopes", "slope_*")):
+        for label, pattern in (("all", ""), ("flat", "flat*"), ("stairs", "rough_pyramid_stairs*"), ("slopes", "*slope*"), ("boxes", "rough_boxes*")):
             ttk.Button(presets, text=label, width=8, command=lambda p=pattern: self.v["filter"].set(p)).pack(side="left", padx=2)
 
         lbox = ttk.Frame(left)
@@ -443,7 +443,7 @@ class EvalGui:
         ttk.Entry(right, textvariable=self.v["seeds"]).grid(row=r, column=1, columnspan=2, sticky="ew", **pad)
         r += 2
 
-        label("Speed (m/s):", "commanded forward speed; empty = scenario default (0.5)")
+        label("Speed (m/s):", "walking speed; empty = scenario default; ignored by flat_turn_360 and flat_max_speed")
         ttk.Entry(right, textvariable=self.v["speed"], width=10).grid(row=r, column=1, sticky="w", **pad)
         r += 2
 
@@ -758,7 +758,7 @@ class EvalGui:
 def run_gui(list_cmd: Callable[[str], list[str]]) -> list[str] | None:
     """Open the window. Returns the evaluate.py arguments, or None if the window was closed/cancelled.
 
-    list_cmd(path) must return the command that writes the scenario catalog JSON to ``path``.
+    list_cmd(path) must return the command that writes the scenario catalog JSON to path.
     """
     try:
         root = tk.Tk()
