@@ -472,7 +472,7 @@ class EvalGui:
         label("Options:")
         opts = ttk.Frame(right)
         opts.grid(row=r, column=1, columnspan=2, sticky="w", **pad)
-        ttk.Checkbutton(opts, text="Keep going after trunk contact (records every contact)", variable=self.b["keep_going_after_contact"]).pack(anchor="w")
+        ttk.Checkbutton(opts, text="Keep going after base contact (do not end the episode)", variable=self.b["keep_going_after_contact"]).pack(anchor="w")
         ttk.Checkbutton(opts, text="Show the report windows when finished", variable=self.b["show_report"]).pack(anchor="w")
         r += 1
 

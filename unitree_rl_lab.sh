@@ -79,6 +79,10 @@ case "$1" in
         ${python_exe} ${UNITREE_RL_LAB_PATH}/scripts/rsl_rl/train.py "$@"
         ;;
         # You can change to --headless for train
+    -e|--evaluate)
+        shift
+        ${python_exe} ${UNITREE_RL_LAB_PATH}/scripts/rsl_rl/evaluate.py "$@"
+        ;;
     *) # unknown option
         ;;
 esac

@@ -27,6 +27,7 @@ import math
 import os
 import re
 import sys
+import textwrap
 import warnings
 
 import numpy as np
@@ -168,11 +169,26 @@ def shade_obstacle_time(ax, t: np.ndarray, x: np.ndarray, half, dt: float):
         ax.axvspan(t[s] - dt, t[e - 1], color=C_OBSTACLE, alpha=0.16, lw=0, label="on the obstacle" if k == 0 else None)
 
 
+SUBTITLE_PT = 8  # font size of the grey line(s) under a title
+
+
+def wrap_to_axes(ax, text: str, font_pt: float = SUBTITLE_PT) -> str:
+    """Break ``text`` into lines that fit the current width of the axes (explicit line breaks are kept)."""
+    width_in = ax.get_position().width * ax.figure.get_figwidth()
+    max_chars = max(24, int(width_in * 72 / (font_pt * 0.6)))
+    lines = []
+    for part in text.split("\n"):
+        lines += textwrap.wrap(part.strip(), max_chars) or [""]
+    return "\n".join(lines)
+
+
 def style_axes(ax, title: str, ylabel: str = "", xlabel: str = "", subtitle: str = ""):
-    """Bold title; ``subtitle`` is an optional second line (legend hints) in smaller grey text below it."""
+    """Bold title; ``subtitle`` is optional legend hints in smaller grey text below it, wrapped to the axes width."""
     if subtitle:
+        subtitle = wrap_to_axes(ax, subtitle)
+        ax._subtitle_lines = subtitle.count("\n") + 1
         ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c", pad=15 + 12 * subtitle.count("\n"))
-        ax.text(0.0, 1.015, subtitle, transform=ax.transAxes, ha="left", va="bottom", fontsize=8, color=C_GRAY)
+        ax.text(0.0, 1.015, subtitle, transform=ax.transAxes, ha="left", va="bottom", fontsize=SUBTITLE_PT, color=C_GRAY)
     else:
         ax.set_title(title, loc="left", fontsize=10, fontweight="bold", color="#1f4e8c")
     ax.set_ylabel(ylabel)
@@ -184,6 +200,7 @@ def style_axes(ax, title: str, ylabel: str = "", xlabel: str = "", subtitle: str
 # Screen size in pixels (set in main() when windows are shown) and an optional fixed dpi (--dpi).
 SCREEN: dict = {"w": None, "h": None, "dpi": None}
 FIT_HEIGHT_CAP_IN = 9.6  # taller figures do not shrink the dpi further (they are clipped to the screen height)
+WINDOW_CHROME_PX = 170  # screen height taken by the window title bar, the matplotlib toolbar and desktop panels
 
 
 def screen_size() -> tuple[int, int] | None:
@@ -208,15 +225,55 @@ def fit_dpi(width_in: float, height_in: float) -> float:
         return float(SCREEN["dpi"])
     if not SCREEN["w"]:
         return 100.0
-    dpi = min(100.0, 0.96 * SCREEN["w"] / width_in, 0.88 * SCREEN["h"] / min(height_in, FIT_HEIGHT_CAP_IN))
+    usable_h = SCREEN["h"] - WINDOW_CHROME_PX  # title bar, toolbar, desktop panels
+    dpi = min(100.0, 0.96 * SCREEN["w"] / width_in, usable_h / min(height_in, FIT_HEIGHT_CAP_IN))
     return max(dpi, 50.0)
 
 
 def new_figure(plt, width_in: float, height_in: float):
     dpi = fit_dpi(width_in, height_in)
     if SCREEN["h"] and not SCREEN["dpi"]:  # never taller than the screen
-        height_in = min(height_in, 0.88 * SCREEN["h"] / dpi)
+        height_in = min(height_in, (SCREEN["h"] - WINDOW_CHROME_PX) / dpi)
     return plt.figure(figsize=(width_in, height_in), dpi=dpi, facecolor=BG)
+
+
+def subtitle_lines(fig) -> int:
+    """Largest number of subtitle lines over the axes of a figure."""
+    return max([getattr(ax, "_subtitle_lines", 0) for ax in fig.axes] + [0])
+
+
+def title_zone_in(lines: int) -> float:
+    """Height (inches) taken above an axes by its title and ``lines`` subtitle lines."""
+    pad_pt = 15 + 12 * max(lines - 1, 0) if lines else 6
+    return (pad_pt + 14) / 72
+
+
+def inch_layout(fig, gs, *, left: float, right: float, top: float, bottom: float, hgap: float, wgap: float):
+    """Place the grid with margins and gaps in INCHES, and again whenever the window is resized.
+
+    Fractions of the figure (the matplotlib default) shrink with the window while the fonts keep their size,
+    so titles and labels overlap the row above on a small or squeezed window; fixed inches do not.
+    """
+    nrows, ncols = gs.get_geometry()
+
+    def apply(_event=None):
+        w, h = fig.get_size_inches()
+        avail_h = max(h - top - bottom - hgap * (nrows - 1), 0.4 * nrows)
+        avail_w = max(w - left - right - wgap * (ncols - 1), 0.4 * ncols)
+        gs.update(
+            left=left / w, right=1.0 - right / w, top=1.0 - top / h, bottom=bottom / h,
+            hspace=hgap / (avail_h / nrows) if nrows > 1 else 0.0, wspace=wgap / (avail_w / ncols) if ncols > 1 else 0.0,
+        )  # fmt: skip
+        if fig._suptitle is not None:
+            fig._suptitle.set_position((left / w, 1.0 - 0.12 / h))
+            fig._suptitle.set_verticalalignment("top")
+
+    apply()
+    try:
+        fig.canvas.mpl_connect("resize_event", apply)
+    except Exception:
+        pass
+    return apply
 
 
 def set_window_title(fig, title: str):
@@ -625,9 +682,14 @@ def scenario_figure(plt, name: str, sc: dict):
     has_series = any((e.get("series") or {}).get("t") for e in eps)
 
     fig = new_figure(plt, 16.5, 9.2)
-    gs = fig.add_gridspec(
-        3, 3, width_ratios=[1.0, 1.0, 0.72], left=0.05, right=0.99, top=0.895, bottom=0.07, hspace=0.62, wspace=0.36
-    )  # fmt: skip
+    gs = fig.add_gridspec(3, 3, width_ratios=[1.0, 1.0, 0.72])
+
+    def layout(lines: int):
+        # above a row: its title and subtitle; below a row: tick labels (two lines under the outcome bars) and x label
+        return inch_layout(fig, gs, left=0.8, right=0.15, top=0.45 + title_zone_in(lines), bottom=0.6,
+                           hgap=title_zone_in(lines) + 0.62, wgap=1.45)  # fmt: skip
+
+    layout(2)  # provisional (the subtitles are wrapped to the axes width), redone below with the real line count
     ax_sp = fig.add_subplot(gs[0, 0])
     ax_ov = fig.add_subplot(gs[0, 1])
     ax_ct = fig.add_subplot(gs[1, 0], sharex=ax_sp)
@@ -636,7 +698,7 @@ def scenario_figure(plt, name: str, sc: dict):
     ax_tp = fig.add_subplot(gs[2, 1], sharex=ax_sp)
     ax_tx = fig.add_subplot(gs[:, 2])
     episodes_txt = f"{len(eps)} episode" + ("" if len(eps) == 1 else "s")
-    fig.suptitle(f"{name}   |   average over {episodes_txt}", fontsize=13, fontweight="bold", color="#1f4e8c", x=0.05, y=0.975, ha="left")
+    fig.suptitle(f"{name}   |   average over {episodes_txt}", fontsize=13, fontweight="bold", color="#1f4e8c", ha="left")
     short_label = label.split(" (")[0]  # e.g. "turn rate" of "turn rate (counter-clockwise)"
     label_note = label[len(short_label):].strip(" ()")
     title_label = short_label[:1].upper() + short_label[1:]
@@ -650,8 +712,8 @@ def scenario_figure(plt, name: str, sc: dict):
     ax.bar(idx, progress, color=[OUTCOME_COLORS[outcome(e)] for e in eps], width=0.7)
     if spawn is not None and goal is not None:
         ax.axhline(goal - spawn, color=C_OK, ls="--", lw=1.0)
-        ax.text(0.99, goal - spawn, "full turn" if turn else "distance to goal", transform=ax.get_yaxis_transform(),
-                color=C_OK, fontsize=7.5, ha="right", va="bottom")  # fmt: skip
+        ax.text(1.01, goal - spawn, "full\nturn" if turn else "goal", transform=ax.get_yaxis_transform(),
+                color=C_OK, fontsize=7.5, ha="left", va="center", clip_on=False)  # fmt: skip
         ax.set_ylim(0, (goal - spawn) * 1.18)
     elif progress:
         ax.set_ylim(0, max(progress) * 1.25 + 1e-9)
@@ -667,11 +729,12 @@ def scenario_figure(plt, name: str, sc: dict):
         multi = len(set(seeds)) > 1
         ax.set_xticklabels([f"{i}\ns{sd}" if multi else str(i) for i, sd in zip(idx, seeds)], fontsize=7)
     style_axes(ax, "Outcome per episode", f"progress, {meta.get('progress_unit', 'm')}", "episode",
-               subtitle="green = success, red = fell, amber = timeout; above a bar: duration, Nc = trunk contacts")  # fmt: skip
+               subtitle="green = success, red = fell, amber = timeout;\nabove a bar: duration, Nc = trunk contacts")  # fmt: skip
 
     if not has_series:
         for axis in (ax_sp, ax_ov, ax_ct, ax_hd, ax_tp):
             axis.text(0.5, 0.5, "this report has no time series", ha="center", va="center", transform=axis.transAxes)
+        layout(subtitle_lines(fig))
         return fig
 
     # bins: position along the course, rotation angle, or (sprint) time since the start of the episode
@@ -757,7 +820,7 @@ def scenario_figure(plt, name: str, sc: dict):
     total_legs = sum(e.get("leg_contact_events") or 0 for e in eps)
     where = "time" if time_aligned else ("angle" if turn else "place")
     style_axes(ax_ct, ("When" if time_aligned else "Where") + " the body touched the surface", "% of episodes",
-               subtitle=f"share of the episodes with a contact at this {where}: red = trunk (base or head)"
+               subtitle=f"share of the episodes with a contact at this {where}:\nred = trunk (base or head)"
                + (", orange = legs" if has_legs else ""))  # fmt: skip
     summary_txt = f"trunk {total_trunk}" + (f", legs {total_legs}" if has_legs else "") + f" contact event(s) in {episodes_txt}"
     ax_ct.text(0.99, 0.95, summary_txt, transform=ax_ct.transAxes, ha="right", va="top",
@@ -805,6 +868,7 @@ def scenario_figure(plt, name: str, sc: dict):
     pad_top(twin2, 0.45)
     ax_tp.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7, ncol=3, framealpha=0.9, handlelength=1.6, columnspacing=1.0)
     ax_sp.set_xlim(edges[0], edges[-1])
+    layout(subtitle_lines(fig))  # final gaps for the real number of subtitle lines
     return fig
 
 
