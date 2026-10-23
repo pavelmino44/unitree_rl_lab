@@ -41,7 +41,8 @@ When the runs are finished the report viewer (eval_report.py) opens: one window 
 with the commanded speed, trunk-contact timeline, all numbers), one window per scenario (averages over its
 episodes) and one window for the whole run. It can also be started on its own on a saved report:
     python scripts/rsl_rl/eval_report.py path/to/report.json
-Use --no_report to skip it, --report_save DIR to also write the figures as PNG files.
+Use --no_report to skip it, --report_save [DIR] to also write the figures as PNG files (without DIR: into a folder
+named like the JSON report, next to it).
 
 Metrics (per scenario, over all pooled episodes)
   Task:        success_rate (goal line crossed; for pyramids: the far side = climb AND descent),
@@ -511,7 +512,15 @@ parser.add_argument(
     "--no_report", action="store_true", default=False, help="Do not open the report viewer when the runs are done."
 )
 parser.add_argument(
-    "--report_save", type=str, default=None, help="Also save the report figures as PNG files into this folder."
+    "--report_save",
+    type=str,
+    nargs="?",
+    const="",
+    default=None,
+    help=(
+        "Save the report figures as PNG files into this folder. Without a folder: next to the JSON report, in a "
+        "folder with the same name (e.g. eval/eval_model_5000_<time>/). Works also with --no_report."
+    ),
 )
 parser.add_argument("--disable_fabric", action="store_true", default=False, help="Disable fabric.")
 parser.add_argument("--real-time", action="store_true", default=False, help="Run in real time (useful with the GUI).")
@@ -575,13 +584,26 @@ def _child_cmd(extra: list[str]) -> list[str]:
     return [sys.executable, os.path.abspath(__file__), *base, "--internal_child", *extra]
 
 
+def _plots_dir(report_path: str, report_save: str) -> str:
+    """Folder for the PNG figures: the given one, or next to the report with the report's name."""
+    if report_save and report_save.strip():
+        return os.path.abspath(os.path.expanduser(report_save.strip()))
+    return os.path.splitext(os.path.abspath(report_path))[0]
+
+
 def _open_report(report_path: str, args) -> None:
-    """Open the report viewer on the saved report (blocks until its windows are closed)."""
+    """Run the report viewer on the saved report: show the windows (blocks until they are closed) and/or save
+    the figures as PNG (--report_save)."""
     viewer = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eval_report.py")
     cmd = [sys.executable, viewer, report_path]
-    if args.report_save:
-        cmd += ["--save", args.report_save]
-    print("[INFO] Opening the report viewer (close its windows to finish) ...", flush=True)
+    if args.report_save is not None:
+        plots = _plots_dir(report_path, args.report_save)
+        cmd += ["--save", plots]
+        print(f"[INFO] Figures will be saved to: {plots}", flush=True)
+    if args.no_report:
+        cmd.append("--no_show")
+    else:
+        print("[INFO] Opening the report viewer (close its windows to finish) ...", flush=True)
     if subprocess.run(cmd).returncode != 0:
         print(
             "[WARN] The report viewer failed (is matplotlib installed?). The report is saved, view it later with:\n"
@@ -661,7 +683,7 @@ def _run_children(args) -> int:
     print(f"[INFO] Report saved to: {out}")
     if failed:
         print(f"[WARN] {failed} run(s) failed, their episodes are missing from the report.")
-    if not args.no_report:
+    if not args.no_report or args.report_save is not None:
         _open_report(out, args)
     return 0 if not failed else 1
 

@@ -59,7 +59,7 @@ python scripts/rsl_rl/evaluate.py [--gui] [--task TASK] [--scenarios LIST] [--ep
 | `--no_contact_termination` | | A base contact does not end the episode (to see every contact) |
 | `--record_dt` | `0.1` | Time step (s) of the time series stored in the report |
 | `--no_report` | | Do not open the viewer at the end |
-| `--report_save` | | Also save all figures as PNG into this folder |
+| `--report_save [DIR]` | | Also save all figures as PNG into `DIR`; without `DIR`: next to the JSON report, in a folder with the same name (`eval/eval_<model>_<time>/`). Works with `--no_report` too (save without showing) |
 | `--num_envs` | `1` | Parallel copies of the same scenario |
 | `--device`, `--disable_fabric` | | Isaac Lab options |
 
@@ -80,6 +80,10 @@ episodes on one seed are almost identical. The seed changes the layout of the ra
   (it starts a short headless Isaac Sim; the list is cached in `~/.cache/unitree_rl_lab/eval_catalog.json`).
 - **Run settings**: the same options as on the command line. The *Equivalent command* line shows the command
   that will run; *Copy* puts it in the clipboard.
+- **Plots (PNG)**: tick *Save* to store all figures as PNG (`--report_save`). Leave the folder empty to save them
+  next to the JSON report, in a folder with the same name, e.g. `eval/eval_model_5000_20261023_131650/` next to
+  `eval/eval_model_5000_20261023_131650.json`; or type / choose a folder (*Folder...*). Combined with
+  *Show the report windows when finished* unticked, the figures are saved without opening any window.
 - **Configurations**: *Save* / *Load* store all settings as JSON (default folder
   `scripts/rsl_rl/eval_configs/`). The last used settings are restored on the next start (`_last.json`).
 - *Run* closes the window; the run continues in the terminal.
@@ -98,7 +102,12 @@ python scripts/rsl_rl/eval_report.py REPORT.json [--scenarios LIST] [--no_overal
 | Episode | Speed vs. time with the command, body-contact timeline (base / head / legs), progress, heading error / tilt / lateral deviation, all numbers |
 
 At most `--max_windows` (40) windows open at once; `--save DIR --no_show` writes all figures as PNG. Without a
-display the figures are saved next to the report. Windows are scaled to fit the screen (`--dpi` to override).
+display the figures are saved next to the report (`<report>_plots/`). Windows are scaled to fit the screen (`--dpi`
+to override).
+
+By default only the JSON report is written; the figures are shown, not saved. To keep them as PNG, use
+`--report_save` / the *Plots (PNG)* option of the GUI during the run, or later
+`eval_report.py REPORT.json --save DIR --no_show` – all figures are rebuilt from the JSON report.
 
 ## Scenarios
 

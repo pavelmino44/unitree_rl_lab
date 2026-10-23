@@ -77,6 +77,8 @@ DEFAULTS: dict = {
     "extra_args": "",
     "keep_going_after_contact": False,  # --no_contact_termination
     "show_report": True,  # open the report viewer when the runs are finished (False: --no_report)
+    "save_plots": False,  # save the figures as PNG (--report_save)
+    "plots_dir": "",  # folder for the PNG files; empty = next to the JSON report, named like it
 }
 
 
@@ -153,6 +155,9 @@ def build_argv(cfg: dict, order: list[str]) -> list[str]:
         argv.append("--no_contact_termination")
     if not cfg["show_report"]:
         argv.append("--no_report")
+    if cfg["save_plots"]:  # without a folder evaluate.py uses <report name>/ next to the JSON report
+        folder = cfg["plots_dir"].strip()
+        argv += ["--report_save", os.path.expanduser(folder)] if folder else ["--report_save"]
     ckpt, run = cfg["checkpoint"].strip(), cfg["load_run"].strip()
     if ckpt:
         argv += ["--checkpoint", os.path.expanduser(ckpt)]
@@ -205,9 +210,9 @@ def read_config(path: str) -> dict:
         if key in raw:
             cfg[key] = raw[key]
     cfg["scenarios"] = [str(s) for s in cfg["scenarios"]]
-    for key in ("task", "seeds", "speed", "checkpoint", "load_run", "output", "device", "extra_args"):
+    for key in ("task", "seeds", "speed", "checkpoint", "load_run", "output", "device", "extra_args", "plots_dir"):
         cfg[key] = str(cfg[key])
-    for key in ("keep_going_after_contact", "show_report"):
+    for key in ("keep_going_after_contact", "show_report", "save_plots"):
         cfg[key] = bool(cfg[key])
     if cfg["mode"] not in MODES:
         cfg["mode"] = "headless"
@@ -248,9 +253,9 @@ class EvalGui:
         root.minsize(900, 520)
         root.protocol("WM_DELETE_WINDOW", self._cancel)
 
-        names = ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "mode", "device", "extra_args", "filter")
+        names = ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "plots_dir", "mode", "device", "extra_args", "filter")
         self.v = {k: tk.StringVar() for k in names}
-        self.b = {k: tk.BooleanVar() for k in ("keep_going_after_contact", "show_report")}
+        self.b = {k: tk.BooleanVar() for k in ("keep_going_after_contact", "show_report", "save_plots")}
         self.desc_var = tk.StringVar()
         self.status_var = tk.StringVar()
         self.summary_var = tk.StringVar()
@@ -462,6 +467,17 @@ class EvalGui:
         ttk.Button(right, text="Choose...", width=9, command=self._browse_output).grid(row=r, column=2, **pad)
         r += 2
 
+        label("Plots (PNG):", "empty folder: next to the JSON report, in a folder with the same name")
+        plots = ttk.Frame(right)
+        plots.grid(row=r, column=1, sticky="ew", **pad)
+        plots.columnconfigure(1, weight=1)
+        ttk.Checkbutton(plots, text="Save", variable=self.b["save_plots"]).grid(row=0, column=0, padx=(0, 6))
+        self.plots_entry = ttk.Entry(plots, textvariable=self.v["plots_dir"])
+        self.plots_entry.grid(row=0, column=1, sticky="ew")
+        self.plots_btn = ttk.Button(right, text="Folder...", width=9, command=self._browse_plots)
+        self.plots_btn.grid(row=r, column=2, **pad)
+        r += 2
+
         label("Run mode:")
         modes = ttk.Frame(right)
         modes.grid(row=r, column=1, columnspan=2, sticky="w", **pad)
@@ -637,6 +653,8 @@ class EvalGui:
             "extra_args": v["extra_args"].strip(),
             "keep_going_after_contact": bool(self.b["keep_going_after_contact"].get()),
             "show_report": bool(self.b["show_report"].get()),
+            "save_plots": bool(self.b["save_plots"].get()),
+            "plots_dir": v["plots_dir"].strip(),
         }
 
     def _apply_cfg(self, cfg: dict, warn_unknown: bool = True):
@@ -644,7 +662,7 @@ class EvalGui:
         wanted = [str(s) for s in cfg["scenarios"]]
         unknown = [s for s in wanted if self.order and s not in self.catalog["scenarios"]]
         self.selected = {s for s in wanted if s not in unknown}
-        for key in ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "mode", "device", "extra_args"):
+        for key in ("task", "episodes", "seeds", "speed", "checkpoint", "load_run", "output", "plots_dir", "mode", "device", "extra_args"):
             self.v[key].set(str(cfg[key]))
         for key in self.b:
             self.b[key].set(bool(cfg[key]))
@@ -706,6 +724,12 @@ class EvalGui:
         if path:
             self.v["output"].set(path)
 
+    def _browse_plots(self):
+        path = filedialog.askdirectory(title="Folder for the plots", mustexist=False)
+        if path:
+            self.v["plots_dir"].set(path)
+            self.b["save_plots"].set(True)
+
     def _copy_command(self):
         self.root.clipboard_clear()
         self.root.clipboard_append(self.cmd_var.get())
@@ -717,6 +741,9 @@ class EvalGui:
             self._apply_filter()
         cfg = self._collect()
         self.run_cb.configure(state="disabled" if cfg["checkpoint"] else "normal")
+        plots_state = ["!disabled"] if cfg["save_plots"] else ["disabled"]
+        self.plots_entry.state(plots_state)
+        self.plots_btn.state(plots_state)
 
         n = len(cfg["scenarios"])
         seeds = parse_seeds(cfg["seeds"]) or []
