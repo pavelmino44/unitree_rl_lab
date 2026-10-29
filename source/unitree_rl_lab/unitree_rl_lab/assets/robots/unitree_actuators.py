@@ -147,6 +147,21 @@ class UnitreeActuatorCfg_Go2HV(UnitreeActuatorCfg):
 
 
 @configclass
+class UnitreeActuatorCfg_Go2HV_Calf(UnitreeActuatorCfg):
+    """Go2 knee (calf) joint: the same motor as hip / thigh behind an extra reduction.
+
+    go2_description.urdf gives the calf effort 45.43 N*m / velocity 15.70 rad/s against
+    23.7 N*m / 30.1 rad/s for hip and thigh, a ratio of 45.43 / 23.7 = 30.1 / 15.70 = 1.917.
+    The Go2HV curve is scaled by this ratio: torques x 1.917, speeds / 1.917.
+    """
+
+    X1 = 13.5 / 1.917
+    X2 = 30 / 1.917
+    Y1 = 20.2 * 1.917
+    Y2 = 23.4 * 1.917
+
+
+@configclass
 class UnitreeActuatorCfg_N7520_14p3(UnitreeActuatorCfg):
     # Decimal point cannot be used as variable name, use `p` instead
     X1 = 22.63

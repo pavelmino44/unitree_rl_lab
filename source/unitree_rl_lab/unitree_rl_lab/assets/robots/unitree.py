@@ -111,8 +111,16 @@ UNITREE_GO2_CFG = UnitreeArticulationCfg(
         joint_vel={".*": 0.0},
     ),
     actuators={
+        # Hip and thigh: GO2HV curve, ~23 N*m, up to 30 rad/s (go2_description.urdf: 23.7 N*m, 30.1 rad/s)
         "GO2HV": unitree_actuators.UnitreeActuatorCfg_Go2HV(
-            joint_names_expr=[".*"],
+            joint_names_expr=[".*_hip_joint", ".*_thigh_joint"],
+            stiffness=25.0,
+            damping=0.5,
+            friction=0.01,
+        ),
+        # Knee: ~45 N*m, up to 15.7 rad/s (go2_description.urdf: 45.43 N*m, 15.70 rad/s)
+        "GO2HV_CALF": unitree_actuators.UnitreeActuatorCfg_Go2HV_Calf(
+            joint_names_expr=[".*_calf_joint"],
             stiffness=25.0,
             damping=0.5,
             friction=0.01,
