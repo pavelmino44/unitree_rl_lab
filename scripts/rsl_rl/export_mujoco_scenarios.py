@@ -1,3 +1,5 @@
+# Copyright (c) 2026, unitree-go2-rl contributors.
+# SPDX-License-Identifier: Apache-2.0
 """Export the evaluation scenarios (eval_scenarios.py) and their exact terrains for the MuJoCo evaluation.
 
 The MuJoCo evaluation (ros2_ws/src/go2_eval + unitree_mujoco/simulate_python/eval_sim.py) runs the SAME
