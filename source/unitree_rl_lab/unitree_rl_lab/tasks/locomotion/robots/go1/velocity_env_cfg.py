@@ -34,14 +34,18 @@ from unitree_rl_lab.tasks.locomotion.robots.go2.velocity_env_cfg import (
 
 from .actions import RateLimitedJointPositionActionCfg
 from .rewards import safety_target_correction_l2
+from .gait import signed_forward_velocity, rear_feet_narrow_penalty
 from .stability import base_too_low, low_base_height_penalty
 
 # SDK/T2 joint order: FR, FL, RR, RL; hip, thigh, calf per leg.
 assert len(GO1_SDK_JOINTS) == 12
 # Use stricter margins than the T2 contractual limits. This is not a
 # guarantee of collision freedom: only the full Safety Block can give that.
-JOINT_MIN = (-0.70, 0.05, -2.60) * 4
-JOINT_MAX = (+0.70, 2.25, -1.00) * 4
+# Stage 1 (straight line only): keep right hips slightly abducted (negative)
+# and left hips slightly abducted (positive). This prevents splaying/crossing
+# exploits while self-collision detection is off for this URDF import.
+JOINT_MIN = (-0.32, 0.05, -2.60, +0.03, 0.05, -2.60) * 2
+JOINT_MAX = (-0.03, 2.25, -1.00, +0.32, 2.25, -1.00) * 2
 
 
 @configclass
@@ -99,7 +103,11 @@ class Go1ActionsCfg:
         asset_name="robot",
         joint_names=GO1_SDK_JOINTS,
         preserve_order=True,
-        scale=0.45,
+        scale={
+            ".*_hip_joint": 0.15,
+            ".*_thigh_joint": 0.35,
+            ".*_calf_joint": 0.35,
+        },
         use_default_offset=True,
         clip=None,  # Raw actions are clipped before affine scaling by our action term.
         raw_action_clip=1.0,
@@ -139,6 +147,24 @@ class Go1EventsCfg(Go2EventsCfg):
 
 @configclass
 class Go1RewardsCfg(Go2RewardsCfg):
+    # Distinguish genuine net forward progress from in-place fore-aft rocking.
+    # On a 0.3 m/s trajectory, this adds ~0.6 reward units per policy step
+    # (before multiplying by episode dt in the reward manager).
+    signed_forward_progress = RewTerm(
+        func=signed_forward_velocity, weight=2.0, params={"max_speed": 0.6}
+    )
+    # At nominal stand the rear feet should be well separated laterally.
+    # This term only acts below 18 cm and is zero for ordinary wide stances.
+    rear_feet_narrow = RewTerm(
+        func=rear_feet_narrow_penalty,
+        weight=-0.5,
+        params={
+            "min_width": 0.18,
+            "asset_cfg": SceneEntityCfg(
+                "robot", body_names=["RR_foot", "RL_foot"], preserve_order=True
+            ),
+        },
+    )
     # A narrower velocity-tracking kernel distinguishes real forward walking
     # from stationary nose-down poses (which score well with a wide kernel).
     track_lin_vel_xy = RewTerm(

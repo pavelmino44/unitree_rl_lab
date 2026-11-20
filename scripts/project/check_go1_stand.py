@@ -21,7 +21,7 @@ app = AppLauncher(args).app
 
 import gymnasium as gym
 import torch
-from isaaclab.utils.math import euler_xyz_from_quat
+from isaaclab.utils.math import euler_xyz_from_quat, quat_apply_inverse
 
 import unitree_rl_lab.tasks  # noqa: F401
 from unitree_rl_lab.tasks.locomotion.robots.go1.velocity_env_cfg import Go1FlatPlayEnvCfg
@@ -38,6 +38,10 @@ def main() -> None:
         robot = unwrapped.scene["robot"]
         contacts = unwrapped.scene["contact_forces"]
         print("Sensor bodies:", contacts.body_names)
+        foot_ids, foot_names = robot.find_bodies(
+            ["FR_foot", "FL_foot", "RR_foot", "RL_foot"], preserve_order=True
+        )
+        print("Standing foot bodies:", foot_names)
         actions = torch.zeros(
             (1, unwrapped.action_manager.total_action_dim), device=unwrapped.device
         )
@@ -48,6 +52,15 @@ def main() -> None:
             _, _, terminated, truncated, _ = env.step(actions)
             if step % stride == 0 or bool(terminated[0]) or bool(truncated[0]):
                 z = float(robot.data.root_link_pos_w[0, 2].item())
+                feet_w = robot.data.body_pos_w[:, foot_ids]
+                front_delta_w = feet_w[:, 1] - feet_w[:, 0]
+                rear_delta_w = feet_w[:, 3] - feet_w[:, 2]
+                front_width = float(quat_apply_inverse(
+                    robot.data.root_quat_w, front_delta_w
+                )[0, 1].item())
+                rear_width = float(quat_apply_inverse(
+                    robot.data.root_quat_w, rear_delta_w
+                )[0, 1].item())
                 q = robot.data.root_link_quat_w[:1]
                 roll, pitch, _ = euler_xyz_from_quat(q)
                 norms = contacts.data.net_forces_w[0].norm(dim=-1)
@@ -59,6 +72,7 @@ def main() -> None:
                     f"t={(step + 1)*dt:.2f}s | z={z:.3f}m | "
                     f"roll={math.degrees(float(roll[0])):+.1f}deg | "
                     f"pitch={math.degrees(float(pitch[0])):+.1f}deg | "
+                    f"front_width={front_width:.3f}m | rear_width={rear_width:.3f}m | "
                     f"contacts=[{forces}] | done={bool(terminated[0]) or bool(truncated[0])}"
                 )
             if bool(terminated[0]) or bool(truncated[0]):
