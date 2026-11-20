@@ -51,6 +51,7 @@ def main():
     cfg.episode_length_s = 94.0
     cfg.terminations.bad_orientation = None
     cfg.terminations.base_contact = None
+    cfg.terminations.base_too_low = None
     # T3: constant forward Twist, no lateral command and no turning.
     for ranges in (cfg.commands.base_velocity.ranges, cfg.commands.base_velocity.limit_ranges):
         ranges.lin_vel_x = (args.speed, args.speed)

@@ -34,6 +34,7 @@ from unitree_rl_lab.tasks.locomotion.robots.go2.velocity_env_cfg import (
 
 from .actions import RateLimitedJointPositionActionCfg
 from .rewards import safety_target_correction_l2
+from .stability import base_too_low, low_base_height_penalty
 
 # SDK/T2 joint order: FR, FL, RR, RL; hip, thigh, calf per leg.
 assert len(GO1_SDK_JOINTS) == 12
@@ -80,13 +81,13 @@ class Go1CommandsCfg:
     base_velocity = mdp.UniformLevelVelocityCommandCfg(
         asset_name="robot",
         resampling_time_range=(5.0, 10.0),
-        rel_standing_envs=0.05,
+        rel_standing_envs=0.0,
         debug_vis=False,
         ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
-            lin_vel_x=(0.10, 0.60), lin_vel_y=(0.0, 0.0), ang_vel_z=(0.0, 0.0)
+            lin_vel_x=(0.25, 0.40), lin_vel_y=(0.0, 0.0), ang_vel_z=(0.0, 0.0)
         ),
         limit_ranges=mdp.UniformLevelVelocityCommandCfg.Ranges(
-            lin_vel_x=(0.10, 0.60), lin_vel_y=(0.0, 0.0), ang_vel_z=(0.0, 0.0)
+            lin_vel_x=(0.25, 0.40), lin_vel_y=(0.0, 0.0), ang_vel_z=(0.0, 0.0)
         ),
     )
 
@@ -123,43 +124,52 @@ class Go1ObservationsCfg(Go2ObservationsCfg):
 @configclass
 class Go1EventsCfg(Go2EventsCfg):
     # Go1 URDF physical base is trunk; 'base' is a massless fixed parent link.
-    add_base_mass = EventTerm(
-        func=mdp.randomize_rigid_body_mass,
-        mode="startup",
-        params={
-            "asset_cfg": SceneEntityCfg("robot", body_names="trunk"),
-            "mass_distribution_params": (-0.5, 0.5),
-            "operation": "add",
-        },
-    )
+    # Stage 1: a repeatable stand/walk task. Restore mild domain randomization
+    # and pushes only after upright velocity tracking is learned.
+    physics_material = None
+    add_base_mass = None
     base_external_force_torque = None
-    push_robot = EventTerm(
-        func=mdp.push_by_setting_velocity,
-        mode="interval",
-        interval_range_s=(8.0, 15.0),
-        params={"velocity_range": {"x": (-0.15, 0.15), "y": (-0.15, 0.15)}},
+    push_robot = None
+    reset_robot_joints = EventTerm(
+        func=mdp.reset_joints_by_scale,
+        mode="reset",
+        params={"position_range": (1.0, 1.0), "velocity_range": (0.0, 0.0)},
     )
 
 
 @configclass
 class Go1RewardsCfg(Go2RewardsCfg):
+    # A narrower velocity-tracking kernel distinguishes real forward walking
+    # from stationary nose-down poses (which score well with a wide kernel).
+    track_lin_vel_xy = RewTerm(
+        func=mdp.track_lin_vel_xy_exp,
+        weight=2.5,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.06)},
+    )
+    # No turning is requested; don't make the constant no-yaw reward dominate.
+    track_ang_vel_z = RewTerm(
+        func=mdp.track_ang_vel_z_exp,
+        weight=0.4,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
+    )
+    # Orientation and body height explicitly discourage the front-body-down pose.
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-6.0)
+    low_base_height = RewTerm(
+        func=low_base_height_penalty,
+        weight=-5.0,
+        params={"target_height": 0.30},
+    )
     # Low-speed task: reduce penalty for deviating from the rest pose while walking.
     joint_pos = RewTerm(
         func=mdp.joint_position_penalty,
-        weight=-0.15,
+        weight=-0.08,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
             "stand_still_scale": 3.0,
             "velocity_threshold": 0.1,
         },
     )
-    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.08)
-    # Track 0 yaw-rate; forward speed and lateral drift are handled by xy tracking.
-    track_ang_vel_z = RewTerm(
-        func=mdp.track_ang_vel_z_exp,
-        weight=1.0,
-        params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
-    )
+    action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.025)
     feet_air_time = RewTerm(
         func=mdp.feet_air_time,
         weight=0.10,
@@ -184,11 +194,16 @@ class Go1RewardsCfg(Go2RewardsCfg):
             ),
         },
     )
-    safety_target_correction = RewTerm(func=safety_target_correction_l2, weight=-4.0)
+    safety_target_correction = RewTerm(func=safety_target_correction_l2, weight=-2.0)
 
 
 @configclass
 class Go1TerminationsCfg(Go2TerminationsCfg):
+    # T3 Judge tolerates up to 50 degrees; training uses a tighter upright margin.
+    bad_orientation = DoneTerm(func=mdp.bad_orientation, params={"limit_angle": 0.55})
+    # Contact on trunk is NOT sufficient: the URDF visual head and the collision
+    # geometry are not identical. Height ensures nose-down exploits reset.
+    base_too_low = DoneTerm(func=base_too_low, params={"minimum_height": 0.21})
     base_contact = DoneTerm(
         func=mdp.illegal_contact,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names="trunk"), "threshold": 1.0},
