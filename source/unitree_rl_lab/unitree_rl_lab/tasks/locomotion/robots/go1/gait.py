@@ -44,8 +44,10 @@ def forward_gated_velocity_tracking(
     error_sq = torch.sum(torch.square(command_xy - actual_xy), dim=-1)
     tracking = torch.exp(-error_sq / (std * std))
 
-    forward_command = command_xy[:, 0] > min_command_speed
-    fraction = (actual_xy[:, 0] / command_xy[:, 0].clamp_min(min_command_speed)).clamp(0.0, 1.0)
+    forward_command = command_xy[:, 0] >= min_command_speed
+    fraction = (actual_xy[:, 0] / command_xy[:, 0].clamp_min(min_command_speed)).clamp(
+        0.0, 1.0
+    )
     return torch.where(forward_command, tracking * fraction, tracking)
 
 
@@ -62,7 +64,9 @@ def normalized_forward_progress(
     command_x = env.command_manager.get_command(command_name)[:, 0]
     actual_x = env.scene["robot"].data.root_lin_vel_b[:, 0]
     fraction = (actual_x / command_x.clamp_min(min_command_speed)).clamp(-1.0, 1.0)
-    return torch.where(command_x > min_command_speed, fraction, torch.zeros_like(fraction))
+    return torch.where(
+        command_x >= min_command_speed, fraction, torch.zeros_like(fraction)
+    )
 
 
 def rear_feet_narrow_penalty(
@@ -86,7 +90,6 @@ def rear_feet_narrow_penalty(
     return ((min_width - lateral_separation) / min_width).clamp(min=0.0, max=2.0)
 
 
-
 def diagonal_trot_contact_reward(
     env,
     sensor_cfg: SceneEntityCfg,
@@ -106,9 +109,13 @@ def diagonal_trot_contact_reward(
     """
     sensor = env.scene[sensor_cfg.name]
     if len(sensor_cfg.body_ids) != 4:
-        raise ValueError("diagonal_trot_contact_reward needs exactly 4 ordered foot sensors")
+        raise ValueError(
+            "diagonal_trot_contact_reward needs exactly 4 ordered foot sensors"
+        )
     forces = sensor.data.net_forces_w[:, sensor_cfg.body_ids, :]
-    contact = (torch.linalg.vector_norm(forces, dim=-1) > contact_threshold).to(forces.dtype)
+    contact = (torch.linalg.vector_norm(forces, dim=-1) > contact_threshold).to(
+        forces.dtype
+    )
     fr, fl, rr, rl = contact.unbind(dim=1)
     diagonal_1 = fr * rl * (1.0 - fl) * (1.0 - rr)
     diagonal_2 = fl * rr * (1.0 - fr) * (1.0 - rl)
@@ -164,7 +171,9 @@ def front_rear_pair_swing_penalty(
 
     command_x = env.command_manager.get_command(command_name)[:, 0]
     moving_command = (command_x > min_command_speed).to(foot_forces.dtype)
-    penalty = moving_command * (0.5 * (front_flight + rear_flight) + 0.5 * simultaneous_lift)
+    penalty = moving_command * (
+        0.5 * (front_flight + rear_flight) + 0.5 * simultaneous_lift
+    )
 
     # Optional, inexpensive diagnostics every N policy steps (one print for all envs).
     step = getattr(env, "common_step_counter", -1)
@@ -175,14 +184,26 @@ def front_rear_pair_swing_penalty(
         all_stance = fr & fl & rr & rl
         all_flight = ~fr & ~fl & ~rr & ~rl
         vx = robot.data.root_lin_vel_b[:, 0]
-        values = torch.stack([
-            diagonal.float().mean(), front_only.float().mean(),
-            rear_only.float().mean(), all_stance.float().mean(),
-            all_flight.float().mean(), front_flight.mean(),
-            rear_flight.mean(), simultaneous_lift.mean(),
-            penalty.mean(), vx.mean(),
-            *[foot_contact[:, k].float().mean() for k in range(4)],
-        ]).detach().cpu().tolist()
+        values = (
+            torch.stack(
+                [
+                    diagonal.float().mean(),
+                    front_only.float().mean(),
+                    rear_only.float().mean(),
+                    all_stance.float().mean(),
+                    all_flight.float().mean(),
+                    front_flight.mean(),
+                    rear_flight.mean(),
+                    simultaneous_lift.mean(),
+                    penalty.mean(),
+                    vx.mean(),
+                    *[foot_contact[:, k].float().mean() for k in range(4)],
+                ]
+            )
+            .detach()
+            .cpu()
+            .tolist()
+        )
         print(
             "[Go1 gait debug] "
             f"step={step} diag={values[0]:.3f} "

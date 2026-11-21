@@ -12,7 +12,11 @@ def lin_vel_cmd_levels(
     env: ManagerBasedRLEnv,
     env_ids: Sequence[int],
     reward_term_name: str = "track_lin_vel_xy",
+    increment: float = 0.1,
 ) -> torch.Tensor:
+    """Expand linear ranges; the default increment preserves Go2 behavior."""
+    if increment <= 0:
+        raise ValueError("Velocity curriculum increment must be positive")
     command_term = env.command_manager.get_term("base_velocity")
     ranges = command_term.cfg.ranges
     limit_ranges = command_term.cfg.limit_ranges
@@ -22,7 +26,7 @@ def lin_vel_cmd_levels(
 
     if env.common_step_counter % env.max_episode_length == 0:
         if reward > reward_term.weight * 0.8:
-            delta_command = torch.tensor([-0.1, 0.1], device=env.device)
+            delta_command = torch.tensor([-increment, increment], device=env.device)
             ranges.lin_vel_x = torch.clamp(
                 torch.tensor(ranges.lin_vel_x, device=env.device) + delta_command,
                 limit_ranges.lin_vel_x[0],
