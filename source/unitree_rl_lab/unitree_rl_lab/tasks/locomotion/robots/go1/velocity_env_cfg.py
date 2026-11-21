@@ -36,6 +36,7 @@ from .actions import RateLimitedJointPositionActionCfg
 from .rewards import safety_target_correction_l2
 from .gait import (
     diagonal_trot_contact_reward,
+    front_rear_pair_swing_penalty,
     forward_gated_velocity_tracking,
     normalized_forward_progress,
     rear_feet_narrow_penalty,
@@ -161,16 +162,16 @@ class Go1RewardsCfg(Go2RewardsCfg):
     )
     # A SMALL Go1-specific safeguard: don't force an arbitrary wide stance.
     # Compare the threshold against the measured neutral-stand width.
-    rear_feet_narrow = RewTerm(
-        func=rear_feet_narrow_penalty,
-        weight=-0.2,
-        params={
-            "min_width": 0.15,
-            "asset_cfg": SceneEntityCfg(
-                "robot", body_names=["RR_foot", "RL_foot"], preserve_order=True
-            ),
-        },
-    )
+    # rear_feet_narrow = RewTerm(
+    #     func=rear_feet_narrow_penalty,
+    #     weight=-0.2,
+    #     params={
+    #         "min_width": 0.15,
+    #         "asset_cfg": SceneEntityCfg(
+    #             "robot", body_names=["RR_foot", "RL_foot"], preserve_order=True
+    #         ),
+    #     },
+    # )
     # Standard Gaussian tracking rewards standstill too generously at 0.3 m/s.
     # Here the same Gaussian is gated by achieved forward speed, so stationary
     # policies cannot collect the linear-tracking reward.
@@ -225,7 +226,7 @@ class Go1RewardsCfg(Go2RewardsCfg):
     # for T3 reliable motion matters more than a specific gait pattern.
     diagonal_trot = RewTerm(
         func=diagonal_trot_contact_reward,
-        weight=0.5,
+        weight=0.0,
         params={
             "sensor_cfg": SceneEntityCfg(
                 "contact_forces",
@@ -236,6 +237,31 @@ class Go1RewardsCfg(Go2RewardsCfg):
             "contact_threshold": 2.0,
             "min_command_speed": 0.1,
             "full_reward_speed": 0.2,
+        },
+    )
+    # Anti-bounding: penalize lifting BOTH front legs or BOTH rear legs at once.
+    # This is NOT phase-conditioned; no changes to policy observations/deployment.
+    # Set debug_contacts=False after verifying sensor contact patterns.
+    front_rear_pair_swing = RewTerm(
+        func=front_rear_pair_swing_penalty,
+        weight=-0.6,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=["FR_foot", "FL_foot", "RR_foot", "RL_foot"],
+                preserve_order=True,
+            ),
+            "asset_cfg": SceneEntityCfg(
+                "robot",
+                body_names=["FR_foot", "FL_foot", "RR_foot", "RL_foot"],
+                preserve_order=True,
+            ),
+            "command_name": "base_velocity",
+            "contact_threshold": 2.0,
+            "lift_speed": 0.35,
+            "min_command_speed": 0.1,
+            "debug_contacts": True,
+            "debug_interval": 100,
         },
     )
     undesired_contacts = RewTerm(

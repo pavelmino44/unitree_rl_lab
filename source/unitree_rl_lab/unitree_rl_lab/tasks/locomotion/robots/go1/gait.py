@@ -118,3 +118,80 @@ def diagonal_trot_contact_reward(
     forward_speed = env.scene["robot"].data.root_lin_vel_b[:, 0]
     progress_gate = torch.clamp(forward_speed / full_reward_speed, min=0.0, max=1.0)
     return (diagonal_1 + diagonal_2) * commanded * progress_gate
+
+
+def front_rear_pair_swing_penalty(
+    env,
+    sensor_cfg: SceneEntityCfg,
+    asset_cfg: SceneEntityCfg,
+    command_name: str,
+    contact_threshold: float = 2.0,
+    lift_speed: float = 0.35,
+    min_command_speed: float = 0.1,
+    debug_contacts: bool = False,
+    debug_interval: int = 100,
+) -> torch.Tensor:
+    """Penalize synchronous flight/lift of a front pair or rear pair.
+
+    Foot order MUST be [FR, FL, RR, RL] for both sensor_cfg and asset_cfg.
+    Unlike the strict diagonal bonus, this negative shaping signal fires even
+    when no perfect diagonal contact pattern occurs. It uses only training
+    sensor/state data, so the actor observation size is unchanged.
+
+    Output is in [0, 2]:
+      0.5 * (both-front-in-air + both-rear-in-air)
+      + 0.5 * (upward-motion-front-pair + upward-motion-rear-pair).
+
+    This is a soft anti-bounding regularizer, NOT a guaranteed trot generator.
+    """
+    if len(sensor_cfg.body_ids) != 4 or len(asset_cfg.body_ids) != 4:
+        raise ValueError("Expected four ordered foot bodies: FR, FL, RR, RL")
+    sensor = env.scene[sensor_cfg.name]
+    robot = env.scene[asset_cfg.name]
+    foot_forces = sensor.data.net_forces_w[:, sensor_cfg.body_ids, :]
+    foot_contact = torch.linalg.vector_norm(foot_forces, dim=-1) > contact_threshold
+    fr, fl, rr, rl = foot_contact.unbind(dim=-1)
+
+    # Detect both feet of one axle completely off the ground.
+    front_flight = (~fr & ~fl).to(foot_forces.dtype)
+    rear_flight = (~rr & ~rl).to(foot_forces.dtype)
+
+    # Additional continuous signal: both feet of an axle moving upward.
+    foot_vel_z = robot.data.body_lin_vel_w[:, asset_cfg.body_ids, 2]
+    upward = (foot_vel_z / max(lift_speed, 1e-6)).clamp(0.0, 1.0)
+    fr_up, fl_up, rr_up, rl_up = upward.unbind(dim=-1)
+    simultaneous_lift = fr_up * fl_up + rr_up * rl_up
+
+    command_x = env.command_manager.get_command(command_name)[:, 0]
+    moving_command = (command_x > min_command_speed).to(foot_forces.dtype)
+    penalty = moving_command * (0.5 * (front_flight + rear_flight) + 0.5 * simultaneous_lift)
+
+    # Optional, inexpensive diagnostics every N policy steps (one print for all envs).
+    step = getattr(env, "common_step_counter", -1)
+    if debug_contacts and step >= 0 and step % max(debug_interval, 1) == 0:
+        diagonal = (fr & rl & ~fl & ~rr) | (fl & rr & ~fr & ~rl)
+        front_only = fr & fl & ~rr & ~rl
+        rear_only = rr & rl & ~fr & ~fl
+        all_stance = fr & fl & rr & rl
+        all_flight = ~fr & ~fl & ~rr & ~rl
+        vx = robot.data.root_lin_vel_b[:, 0]
+        values = torch.stack([
+            diagonal.float().mean(), front_only.float().mean(),
+            rear_only.float().mean(), all_stance.float().mean(),
+            all_flight.float().mean(), front_flight.mean(),
+            rear_flight.mean(), simultaneous_lift.mean(),
+            penalty.mean(), vx.mean(),
+            *[foot_contact[:, k].float().mean() for k in range(4)],
+        ]).detach().cpu().tolist()
+        print(
+            "[Go1 gait debug] "
+            f"step={step} diag={values[0]:.3f} "
+            f"front_only={values[1]:.3f} rear_only={values[2]:.3f} "
+            f"all_stance={values[3]:.3f} all_flight={values[4]:.3f} "
+            f"front_air={values[5]:.3f} rear_air={values[6]:.3f} "
+            f"paired_up={values[7]:.3f} penalty={values[8]:.3f} "
+            f"vx={values[9]:+.3f} "
+            f"contacts_FR_FL_RR_RL={tuple(round(v, 2) for v in values[10:14])}",
+            flush=True,
+        )
+    return penalty
