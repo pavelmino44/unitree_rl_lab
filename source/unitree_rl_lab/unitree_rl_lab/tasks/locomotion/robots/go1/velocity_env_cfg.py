@@ -34,7 +34,12 @@ from unitree_rl_lab.tasks.locomotion.robots.go2.velocity_env_cfg import (
 
 from .actions import RateLimitedJointPositionActionCfg
 from .rewards import safety_target_correction_l2
-from .gait import signed_forward_velocity, rear_feet_narrow_penalty
+from .gait import (
+    diagonal_trot_contact_reward,
+    forward_gated_velocity_tracking,
+    normalized_forward_progress,
+    rear_feet_narrow_penalty,
+)
 from .stability import base_too_low, low_base_height_penalty
 
 # SDK/T2 joint order: FR, FL, RR, RL; hip, thigh, calf per leg.
@@ -147,52 +152,57 @@ class Go1EventsCfg(Go2EventsCfg):
 
 @configclass
 class Go1RewardsCfg(Go2RewardsCfg):
-    # Distinguish genuine net forward progress from in-place fore-aft rocking.
-    # On a 0.3 m/s trajectory, this adds ~0.6 reward units per policy step
-    # (before multiplying by episode dt in the reward manager).
+    # Strong early-training progress signal: 0 at standstill, +0.6 at desired
+    # speed, negative if reversing. Saturates to avoid overspeed incentives.
     signed_forward_progress = RewTerm(
-        func=signed_forward_velocity, weight=2.0, params={"max_speed": 0.6}
+        func=normalized_forward_progress,
+        weight=0.6,
+        params={"command_name": "base_velocity"},
     )
-    # At nominal stand the rear feet should be well separated laterally.
-    # This term only acts below 18 cm and is zero for ordinary wide stances.
+    # A SMALL Go1-specific safeguard: don't force an arbitrary wide stance.
+    # Compare the threshold against the measured neutral-stand width.
     rear_feet_narrow = RewTerm(
         func=rear_feet_narrow_penalty,
-        weight=-0.5,
+        weight=-0.2,
         params={
-            "min_width": 0.18,
+            "min_width": 0.15,
             "asset_cfg": SceneEntityCfg(
                 "robot", body_names=["RR_foot", "RL_foot"], preserve_order=True
             ),
         },
     )
-    # A narrower velocity-tracking kernel distinguishes real forward walking
-    # from stationary nose-down poses (which score well with a wide kernel).
+    # Standard Gaussian tracking rewards standstill too generously at 0.3 m/s.
+    # Here the same Gaussian is gated by achieved forward speed, so stationary
+    # policies cannot collect the linear-tracking reward.
     track_lin_vel_xy = RewTerm(
-        func=mdp.track_lin_vel_xy_exp,
-        weight=2.5,
-        params={"command_name": "base_velocity", "std": math.sqrt(0.06)},
+        func=forward_gated_velocity_tracking,
+        weight=1.5,
+        params={"command_name": "base_velocity", "std": math.sqrt(0.15)},
     )
-    # No turning is requested; don't make the constant no-yaw reward dominate.
     track_ang_vel_z = RewTerm(
         func=mdp.track_ang_vel_z_exp,
-        weight=0.4,
+        weight=0.75,
         params={"command_name": "base_velocity", "std": math.sqrt(0.25)},
     )
-    # Orientation and body height explicitly discourage the front-body-down pose.
-    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-6.0)
+    # Go2 baseline is -2.5. Keep moderate additional margin for Go1's
+    # previously observed head-down failure, alongside explicit terminations.
+    flat_orientation_l2 = RewTerm(func=mdp.flat_orientation_l2, weight=-3.5)
+    # Suppress bounding-related pitch/roll oscillation more than Go2 (-0.05).
+    base_angular_velocity = RewTerm(func=mdp.ang_vel_xy_l2, weight=-0.12)
     low_base_height = RewTerm(
         func=low_base_height_penalty,
         weight=-5.0,
         params={"target_height": 0.30},
     )
-    # Low-speed task: reduce penalty for deviating from the rest pose while walking.
+    # Discovery stage: use weaker Go2 regularizers until actual walking starts.
+    # Stronger posture/smoothness penalties led to frozen policies at low speed.
     joint_pos = RewTerm(
         func=mdp.joint_position_penalty,
-        weight=-0.08,
+        weight=-0.10,
         params={
             "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-            "stand_still_scale": 3.0,
-            "velocity_threshold": 0.1,
+            "stand_still_scale": 5.0,
+            "velocity_threshold": 0.3,
         },
     )
     action_rate = RewTerm(func=mdp.action_rate_l2, weight=-0.025)
@@ -207,8 +217,26 @@ class Go1RewardsCfg(Go2RewardsCfg):
     )
     air_time_variance = RewTerm(
         func=mdp.air_time_variance_penalty,
-        weight=-0.1,
+        weight=-0.2,  # gentle regularization during gait discovery
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot")},
+    )
+    # Optional Go1/T3-specific bias against bounding (front pair / rear pair).
+    # Disabled during gait discovery. Enable only after stable forward walking;
+    # for T3 reliable motion matters more than a specific gait pattern.
+    diagonal_trot = RewTerm(
+        func=diagonal_trot_contact_reward,
+        weight=0.5,
+        params={
+            "sensor_cfg": SceneEntityCfg(
+                "contact_forces",
+                body_names=["FR_foot", "FL_foot", "RR_foot", "RL_foot"],
+                preserve_order=True,
+            ),
+            "command_name": "base_velocity",
+            "contact_threshold": 2.0,
+            "min_command_speed": 0.1,
+            "full_reward_speed": 0.2,
+        },
     )
     undesired_contacts = RewTerm(
         func=mdp.undesired_contacts,
@@ -220,7 +248,7 @@ class Go1RewardsCfg(Go2RewardsCfg):
             ),
         },
     )
-    safety_target_correction = RewTerm(func=safety_target_correction_l2, weight=-2.0)
+    safety_target_correction = RewTerm(func=safety_target_correction_l2, weight=-0.5)
 
 
 @configclass
