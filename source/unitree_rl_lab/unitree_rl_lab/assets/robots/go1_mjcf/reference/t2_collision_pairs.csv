@@ -1,0 +1,1541 @@
+geom1_id,geom1,body1_id,body1,geom2_id,geom2,body2_id,body2,diagnostic_policy,explicit_pair
+0,floor,0,world,1,UNNAMED_geom_1,1,trunk,floor exclusion,False
+0,floor,0,world,2,UNNAMED_geom_2,1,trunk,floor exclusion,False
+0,floor,0,world,3,UNNAMED_geom_3,1,trunk,floor exclusion,False
+0,floor,0,world,4,UNNAMED_geom_4,1,trunk,floor exclusion,False
+0,floor,0,world,5,UNNAMED_geom_5,1,trunk,floor exclusion,False
+0,floor,0,world,6,UNNAMED_geom_6,1,trunk,floor exclusion,False
+0,floor,0,world,7,UNNAMED_geom_7,1,trunk,floor exclusion,False
+0,floor,0,world,8,UNNAMED_geom_8,1,trunk,floor exclusion,False
+0,floor,0,world,9,UNNAMED_geom_9,1,trunk,floor exclusion,False
+0,floor,0,world,10,UNNAMED_geom_10,2,FR_hip,floor exclusion,False
+0,floor,0,world,11,UNNAMED_geom_11,2,FR_hip,floor exclusion,False
+0,floor,0,world,12,UNNAMED_geom_12,2,FR_hip,floor exclusion,False
+0,floor,0,world,13,UNNAMED_geom_13,3,FR_thigh,floor exclusion,False
+0,floor,0,world,14,UNNAMED_geom_14,3,FR_thigh,floor exclusion,False
+0,floor,0,world,15,UNNAMED_geom_15,3,FR_thigh,floor exclusion,False
+0,floor,0,world,16,UNNAMED_geom_16,3,FR_thigh,floor exclusion,False
+0,floor,0,world,17,UNNAMED_geom_17,4,FR_calf,floor exclusion,False
+0,floor,0,world,18,UNNAMED_geom_18,4,FR_calf,floor exclusion,False
+0,floor,0,world,19,UNNAMED_geom_19,4,FR_calf,floor exclusion,False
+0,floor,0,world,20,FR,4,FR_calf,floor exclusion,False
+0,floor,0,world,21,UNNAMED_geom_21,5,FL_hip,floor exclusion,False
+0,floor,0,world,22,UNNAMED_geom_22,5,FL_hip,floor exclusion,False
+0,floor,0,world,23,UNNAMED_geom_23,5,FL_hip,floor exclusion,False
+0,floor,0,world,24,UNNAMED_geom_24,6,FL_thigh,floor exclusion,False
+0,floor,0,world,25,UNNAMED_geom_25,6,FL_thigh,floor exclusion,False
+0,floor,0,world,26,UNNAMED_geom_26,6,FL_thigh,floor exclusion,False
+0,floor,0,world,27,UNNAMED_geom_27,6,FL_thigh,floor exclusion,False
+0,floor,0,world,28,UNNAMED_geom_28,7,FL_calf,floor exclusion,False
+0,floor,0,world,29,UNNAMED_geom_29,7,FL_calf,floor exclusion,False
+0,floor,0,world,30,UNNAMED_geom_30,7,FL_calf,floor exclusion,False
+0,floor,0,world,31,FL,7,FL_calf,floor exclusion,False
+0,floor,0,world,32,UNNAMED_geom_32,8,RR_hip,floor exclusion,False
+0,floor,0,world,33,UNNAMED_geom_33,8,RR_hip,floor exclusion,False
+0,floor,0,world,34,UNNAMED_geom_34,8,RR_hip,floor exclusion,False
+0,floor,0,world,35,UNNAMED_geom_35,8,RR_hip,floor exclusion,False
+0,floor,0,world,36,UNNAMED_geom_36,9,RR_thigh,floor exclusion,False
+0,floor,0,world,37,UNNAMED_geom_37,9,RR_thigh,floor exclusion,False
+0,floor,0,world,38,UNNAMED_geom_38,9,RR_thigh,floor exclusion,False
+0,floor,0,world,39,UNNAMED_geom_39,9,RR_thigh,floor exclusion,False
+0,floor,0,world,40,UNNAMED_geom_40,10,RR_calf,floor exclusion,False
+0,floor,0,world,41,UNNAMED_geom_41,10,RR_calf,floor exclusion,False
+0,floor,0,world,42,UNNAMED_geom_42,10,RR_calf,floor exclusion,False
+0,floor,0,world,43,RR,10,RR_calf,floor exclusion,False
+0,floor,0,world,44,UNNAMED_geom_44,11,RL_hip,floor exclusion,False
+0,floor,0,world,45,UNNAMED_geom_45,11,RL_hip,floor exclusion,False
+0,floor,0,world,46,UNNAMED_geom_46,11,RL_hip,floor exclusion,False
+0,floor,0,world,47,UNNAMED_geom_47,11,RL_hip,floor exclusion,False
+0,floor,0,world,48,UNNAMED_geom_48,12,RL_thigh,floor exclusion,False
+0,floor,0,world,49,UNNAMED_geom_49,12,RL_thigh,floor exclusion,False
+0,floor,0,world,50,UNNAMED_geom_50,12,RL_thigh,floor exclusion,False
+0,floor,0,world,51,UNNAMED_geom_51,12,RL_thigh,floor exclusion,False
+0,floor,0,world,52,UNNAMED_geom_52,13,RL_calf,floor exclusion,False
+0,floor,0,world,53,UNNAMED_geom_53,13,RL_calf,floor exclusion,False
+0,floor,0,world,54,UNNAMED_geom_54,13,RL_calf,floor exclusion,False
+0,floor,0,world,55,RL,13,RL_calf,floor exclusion,False
+1,UNNAMED_geom_1,1,trunk,2,UNNAMED_geom_2,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,3,UNNAMED_geom_3,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,4,UNNAMED_geom_4,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,5,UNNAMED_geom_5,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,6,UNNAMED_geom_6,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+1,UNNAMED_geom_1,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,18,UNNAMED_geom_18,4,FR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,19,UNNAMED_geom_19,4,FR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,20,FR,4,FR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,29,UNNAMED_geom_29,7,FL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,30,UNNAMED_geom_30,7,FL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,31,FL,7,FL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,43,RR,10,RR_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+1,UNNAMED_geom_1,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+1,UNNAMED_geom_1,1,trunk,55,RL,13,RL_calf,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,3,UNNAMED_geom_3,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,4,UNNAMED_geom_4,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,5,UNNAMED_geom_5,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,6,UNNAMED_geom_6,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+2,UNNAMED_geom_2,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,20,FR,4,FR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,31,FL,7,FL_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,43,RR,10,RR_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+2,UNNAMED_geom_2,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+2,UNNAMED_geom_2,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+2,UNNAMED_geom_2,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+2,UNNAMED_geom_2,1,trunk,55,RL,13,RL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,4,UNNAMED_geom_4,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,5,UNNAMED_geom_5,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,6,UNNAMED_geom_6,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+3,UNNAMED_geom_3,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,20,FR,4,FR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,31,FL,7,FL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,43,RR,10,RR_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+3,UNNAMED_geom_3,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+3,UNNAMED_geom_3,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+3,UNNAMED_geom_3,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+3,UNNAMED_geom_3,1,trunk,55,RL,13,RL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,5,UNNAMED_geom_5,1,trunk,same welded body,False
+4,UNNAMED_geom_4,1,trunk,6,UNNAMED_geom_6,1,trunk,same welded body,False
+4,UNNAMED_geom_4,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+4,UNNAMED_geom_4,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+4,UNNAMED_geom_4,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+4,UNNAMED_geom_4,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,20,FR,4,FR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,31,FL,7,FL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,43,RR,10,RR_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+4,UNNAMED_geom_4,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+4,UNNAMED_geom_4,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+4,UNNAMED_geom_4,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+4,UNNAMED_geom_4,1,trunk,55,RL,13,RL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,6,UNNAMED_geom_6,1,trunk,same welded body,False
+5,UNNAMED_geom_5,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+5,UNNAMED_geom_5,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+5,UNNAMED_geom_5,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+5,UNNAMED_geom_5,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,20,FR,4,FR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,31,FL,7,FL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,43,RR,10,RR_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+5,UNNAMED_geom_5,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+5,UNNAMED_geom_5,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+5,UNNAMED_geom_5,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+5,UNNAMED_geom_5,1,trunk,55,RL,13,RL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,7,UNNAMED_geom_7,1,trunk,same welded body,False
+6,UNNAMED_geom_6,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+6,UNNAMED_geom_6,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+6,UNNAMED_geom_6,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,20,FR,4,FR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,31,FL,7,FL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,43,RR,10,RR_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+6,UNNAMED_geom_6,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+6,UNNAMED_geom_6,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+6,UNNAMED_geom_6,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+6,UNNAMED_geom_6,1,trunk,55,RL,13,RL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,8,UNNAMED_geom_8,1,trunk,same welded body,False
+7,UNNAMED_geom_7,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+7,UNNAMED_geom_7,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,20,FR,4,FR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,31,FL,7,FL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,43,RR,10,RR_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+7,UNNAMED_geom_7,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+7,UNNAMED_geom_7,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+7,UNNAMED_geom_7,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+7,UNNAMED_geom_7,1,trunk,55,RL,13,RL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,9,UNNAMED_geom_9,1,trunk,same welded body,False
+8,UNNAMED_geom_8,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,20,FR,4,FR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,31,FL,7,FL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,43,RR,10,RR_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+8,UNNAMED_geom_8,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+8,UNNAMED_geom_8,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+8,UNNAMED_geom_8,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+8,UNNAMED_geom_8,1,trunk,55,RL,13,RL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,10,UNNAMED_geom_10,2,FR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,11,UNNAMED_geom_11,2,FR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,12,UNNAMED_geom_12,2,FR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,13,UNNAMED_geom_13,3,FR_thigh,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,14,UNNAMED_geom_14,3,FR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,15,UNNAMED_geom_15,3,FR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,16,UNNAMED_geom_16,3,FR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,18,UNNAMED_geom_18,4,FR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,19,UNNAMED_geom_19,4,FR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,20,FR,4,FR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,21,UNNAMED_geom_21,5,FL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,22,UNNAMED_geom_22,5,FL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,23,UNNAMED_geom_23,5,FL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,29,UNNAMED_geom_29,7,FL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,30,UNNAMED_geom_30,7,FL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,31,FL,7,FL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,32,UNNAMED_geom_32,8,RR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,33,UNNAMED_geom_33,8,RR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,34,UNNAMED_geom_34,8,RR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,35,UNNAMED_geom_35,8,RR_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,41,UNNAMED_geom_41,10,RR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,42,UNNAMED_geom_42,10,RR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,43,RR,10,RR_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,44,UNNAMED_geom_44,11,RL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,45,UNNAMED_geom_45,11,RL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,46,UNNAMED_geom_46,11,RL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,47,UNNAMED_geom_47,11,RL_hip,parent/adjacent filter,False
+9,UNNAMED_geom_9,1,trunk,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+9,UNNAMED_geom_9,1,trunk,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+9,UNNAMED_geom_9,1,trunk,53,UNNAMED_geom_53,13,RL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,54,UNNAMED_geom_54,13,RL_calf,checked,False
+9,UNNAMED_geom_9,1,trunk,55,RL,13,RL_calf,checked,False
+10,UNNAMED_geom_10,2,FR_hip,11,UNNAMED_geom_11,2,FR_hip,same welded body,False
+10,UNNAMED_geom_10,2,FR_hip,12,UNNAMED_geom_12,2,FR_hip,same welded body,False
+10,UNNAMED_geom_10,2,FR_hip,13,UNNAMED_geom_13,3,FR_thigh,parent/adjacent filter,False
+10,UNNAMED_geom_10,2,FR_hip,14,UNNAMED_geom_14,3,FR_thigh,parent/adjacent filter,False
+10,UNNAMED_geom_10,2,FR_hip,15,UNNAMED_geom_15,3,FR_thigh,parent/adjacent filter,False
+10,UNNAMED_geom_10,2,FR_hip,16,UNNAMED_geom_16,3,FR_thigh,parent/adjacent filter,False
+10,UNNAMED_geom_10,2,FR_hip,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,18,UNNAMED_geom_18,4,FR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,19,UNNAMED_geom_19,4,FR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,20,FR,4,FR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,22,UNNAMED_geom_22,5,FL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,23,UNNAMED_geom_23,5,FL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,25,UNNAMED_geom_25,6,FL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,26,UNNAMED_geom_26,6,FL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,27,UNNAMED_geom_27,6,FL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,29,UNNAMED_geom_29,7,FL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,30,UNNAMED_geom_30,7,FL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,31,FL,7,FL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,43,RR,10,RR_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+10,UNNAMED_geom_10,2,FR_hip,55,RL,13,RL_calf,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,12,UNNAMED_geom_12,2,FR_hip,same welded body,False
+11,UNNAMED_geom_11,2,FR_hip,13,UNNAMED_geom_13,3,FR_thigh,parent/adjacent filter,False
+11,UNNAMED_geom_11,2,FR_hip,14,UNNAMED_geom_14,3,FR_thigh,parent/adjacent filter,False
+11,UNNAMED_geom_11,2,FR_hip,15,UNNAMED_geom_15,3,FR_thigh,parent/adjacent filter,False
+11,UNNAMED_geom_11,2,FR_hip,16,UNNAMED_geom_16,3,FR_thigh,parent/adjacent filter,False
+11,UNNAMED_geom_11,2,FR_hip,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,18,UNNAMED_geom_18,4,FR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,19,UNNAMED_geom_19,4,FR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,20,FR,4,FR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,22,UNNAMED_geom_22,5,FL_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,23,UNNAMED_geom_23,5,FL_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,29,UNNAMED_geom_29,7,FL_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,30,UNNAMED_geom_30,7,FL_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,31,FL,7,FL_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,33,UNNAMED_geom_33,8,RR_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,34,UNNAMED_geom_34,8,RR_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,35,UNNAMED_geom_35,8,RR_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,43,RR,10,RR_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+11,UNNAMED_geom_11,2,FR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+11,UNNAMED_geom_11,2,FR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+11,UNNAMED_geom_11,2,FR_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+11,UNNAMED_geom_11,2,FR_hip,55,RL,13,RL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,13,UNNAMED_geom_13,3,FR_thigh,parent/adjacent filter,False
+12,UNNAMED_geom_12,2,FR_hip,14,UNNAMED_geom_14,3,FR_thigh,parent/adjacent filter,False
+12,UNNAMED_geom_12,2,FR_hip,15,UNNAMED_geom_15,3,FR_thigh,parent/adjacent filter,False
+12,UNNAMED_geom_12,2,FR_hip,16,UNNAMED_geom_16,3,FR_thigh,parent/adjacent filter,False
+12,UNNAMED_geom_12,2,FR_hip,17,UNNAMED_geom_17,4,FR_calf,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,18,UNNAMED_geom_18,4,FR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,19,UNNAMED_geom_19,4,FR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,20,FR,4,FR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,22,UNNAMED_geom_22,5,FL_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,23,UNNAMED_geom_23,5,FL_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,29,UNNAMED_geom_29,7,FL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,30,UNNAMED_geom_30,7,FL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,31,FL,7,FL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,33,UNNAMED_geom_33,8,RR_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,34,UNNAMED_geom_34,8,RR_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,35,UNNAMED_geom_35,8,RR_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,43,RR,10,RR_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+12,UNNAMED_geom_12,2,FR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+12,UNNAMED_geom_12,2,FR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+12,UNNAMED_geom_12,2,FR_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+12,UNNAMED_geom_12,2,FR_hip,55,RL,13,RL_calf,checked,False
+13,UNNAMED_geom_13,3,FR_thigh,14,UNNAMED_geom_14,3,FR_thigh,same welded body,False
+13,UNNAMED_geom_13,3,FR_thigh,15,UNNAMED_geom_15,3,FR_thigh,same welded body,False
+13,UNNAMED_geom_13,3,FR_thigh,16,UNNAMED_geom_16,3,FR_thigh,same welded body,False
+13,UNNAMED_geom_13,3,FR_thigh,17,UNNAMED_geom_17,4,FR_calf,parent/adjacent filter,False
+13,UNNAMED_geom_13,3,FR_thigh,18,UNNAMED_geom_18,4,FR_calf,parent/adjacent filter,False
+13,UNNAMED_geom_13,3,FR_thigh,19,UNNAMED_geom_19,4,FR_calf,parent/adjacent filter,False
+13,UNNAMED_geom_13,3,FR_thigh,20,FR,4,FR_calf,parent/adjacent filter,False
+13,UNNAMED_geom_13,3,FR_thigh,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,22,UNNAMED_geom_22,5,FL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,23,UNNAMED_geom_23,5,FL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,25,UNNAMED_geom_25,6,FL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,26,UNNAMED_geom_26,6,FL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,27,UNNAMED_geom_27,6,FL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,29,UNNAMED_geom_29,7,FL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,30,UNNAMED_geom_30,7,FL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,31,FL,7,FL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,43,RR,10,RR_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+13,UNNAMED_geom_13,3,FR_thigh,55,RL,13,RL_calf,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,15,UNNAMED_geom_15,3,FR_thigh,same welded body,False
+14,UNNAMED_geom_14,3,FR_thigh,16,UNNAMED_geom_16,3,FR_thigh,same welded body,False
+14,UNNAMED_geom_14,3,FR_thigh,17,UNNAMED_geom_17,4,FR_calf,parent/adjacent filter,False
+14,UNNAMED_geom_14,3,FR_thigh,18,UNNAMED_geom_18,4,FR_calf,parent/adjacent filter,False
+14,UNNAMED_geom_14,3,FR_thigh,19,UNNAMED_geom_19,4,FR_calf,parent/adjacent filter,False
+14,UNNAMED_geom_14,3,FR_thigh,20,FR,4,FR_calf,parent/adjacent filter,False
+14,UNNAMED_geom_14,3,FR_thigh,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,22,UNNAMED_geom_22,5,FL_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,23,UNNAMED_geom_23,5,FL_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,29,UNNAMED_geom_29,7,FL_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,30,UNNAMED_geom_30,7,FL_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,31,FL,7,FL_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,43,RR,10,RR_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+14,UNNAMED_geom_14,3,FR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+14,UNNAMED_geom_14,3,FR_thigh,55,RL,13,RL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,16,UNNAMED_geom_16,3,FR_thigh,same welded body,False
+15,UNNAMED_geom_15,3,FR_thigh,17,UNNAMED_geom_17,4,FR_calf,parent/adjacent filter,False
+15,UNNAMED_geom_15,3,FR_thigh,18,UNNAMED_geom_18,4,FR_calf,parent/adjacent filter,False
+15,UNNAMED_geom_15,3,FR_thigh,19,UNNAMED_geom_19,4,FR_calf,parent/adjacent filter,False
+15,UNNAMED_geom_15,3,FR_thigh,20,FR,4,FR_calf,parent/adjacent filter,False
+15,UNNAMED_geom_15,3,FR_thigh,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,22,UNNAMED_geom_22,5,FL_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,23,UNNAMED_geom_23,5,FL_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,29,UNNAMED_geom_29,7,FL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,30,UNNAMED_geom_30,7,FL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,31,FL,7,FL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,43,RR,10,RR_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+15,UNNAMED_geom_15,3,FR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+15,UNNAMED_geom_15,3,FR_thigh,55,RL,13,RL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,17,UNNAMED_geom_17,4,FR_calf,parent/adjacent filter,False
+16,UNNAMED_geom_16,3,FR_thigh,18,UNNAMED_geom_18,4,FR_calf,parent/adjacent filter,False
+16,UNNAMED_geom_16,3,FR_thigh,19,UNNAMED_geom_19,4,FR_calf,parent/adjacent filter,False
+16,UNNAMED_geom_16,3,FR_thigh,20,FR,4,FR_calf,parent/adjacent filter,False
+16,UNNAMED_geom_16,3,FR_thigh,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,22,UNNAMED_geom_22,5,FL_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,23,UNNAMED_geom_23,5,FL_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,29,UNNAMED_geom_29,7,FL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,30,UNNAMED_geom_30,7,FL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,31,FL,7,FL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,43,RR,10,RR_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+16,UNNAMED_geom_16,3,FR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+16,UNNAMED_geom_16,3,FR_thigh,55,RL,13,RL_calf,checked,False
+17,UNNAMED_geom_17,4,FR_calf,18,UNNAMED_geom_18,4,FR_calf,same welded body,False
+17,UNNAMED_geom_17,4,FR_calf,19,UNNAMED_geom_19,4,FR_calf,same welded body,False
+17,UNNAMED_geom_17,4,FR_calf,20,FR,4,FR_calf,same welded body,False
+17,UNNAMED_geom_17,4,FR_calf,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,22,UNNAMED_geom_22,5,FL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,23,UNNAMED_geom_23,5,FL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,25,UNNAMED_geom_25,6,FL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,26,UNNAMED_geom_26,6,FL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,27,UNNAMED_geom_27,6,FL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,29,UNNAMED_geom_29,7,FL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,30,UNNAMED_geom_30,7,FL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,31,FL,7,FL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,43,RR,10,RR_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+17,UNNAMED_geom_17,4,FR_calf,55,RL,13,RL_calf,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,19,UNNAMED_geom_19,4,FR_calf,same welded body,False
+18,UNNAMED_geom_18,4,FR_calf,20,FR,4,FR_calf,same welded body,False
+18,UNNAMED_geom_18,4,FR_calf,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,22,UNNAMED_geom_22,5,FL_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,23,UNNAMED_geom_23,5,FL_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,29,UNNAMED_geom_29,7,FL_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,30,UNNAMED_geom_30,7,FL_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,31,FL,7,FL_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,43,RR,10,RR_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+18,UNNAMED_geom_18,4,FR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+18,UNNAMED_geom_18,4,FR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+18,UNNAMED_geom_18,4,FR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+18,UNNAMED_geom_18,4,FR_calf,55,RL,13,RL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,20,FR,4,FR_calf,same welded body,False
+19,UNNAMED_geom_19,4,FR_calf,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,22,UNNAMED_geom_22,5,FL_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,23,UNNAMED_geom_23,5,FL_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,29,UNNAMED_geom_29,7,FL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,30,UNNAMED_geom_30,7,FL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,31,FL,7,FL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,43,RR,10,RR_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+19,UNNAMED_geom_19,4,FR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+19,UNNAMED_geom_19,4,FR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+19,UNNAMED_geom_19,4,FR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+19,UNNAMED_geom_19,4,FR_calf,55,RL,13,RL_calf,checked,False
+20,FR,4,FR_calf,21,UNNAMED_geom_21,5,FL_hip,mask exclusion,False
+20,FR,4,FR_calf,22,UNNAMED_geom_22,5,FL_hip,checked,False
+20,FR,4,FR_calf,23,UNNAMED_geom_23,5,FL_hip,checked,False
+20,FR,4,FR_calf,24,UNNAMED_geom_24,6,FL_thigh,mask exclusion,False
+20,FR,4,FR_calf,25,UNNAMED_geom_25,6,FL_thigh,checked,False
+20,FR,4,FR_calf,26,UNNAMED_geom_26,6,FL_thigh,checked,False
+20,FR,4,FR_calf,27,UNNAMED_geom_27,6,FL_thigh,checked,False
+20,FR,4,FR_calf,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+20,FR,4,FR_calf,29,UNNAMED_geom_29,7,FL_calf,checked,False
+20,FR,4,FR_calf,30,UNNAMED_geom_30,7,FL_calf,checked,False
+20,FR,4,FR_calf,31,FL,7,FL_calf,checked,False
+20,FR,4,FR_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+20,FR,4,FR_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+20,FR,4,FR_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+20,FR,4,FR_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+20,FR,4,FR_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+20,FR,4,FR_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+20,FR,4,FR_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+20,FR,4,FR_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+20,FR,4,FR_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+20,FR,4,FR_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+20,FR,4,FR_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+20,FR,4,FR_calf,43,RR,10,RR_calf,checked,False
+20,FR,4,FR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+20,FR,4,FR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+20,FR,4,FR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+20,FR,4,FR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+20,FR,4,FR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+20,FR,4,FR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+20,FR,4,FR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+20,FR,4,FR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+20,FR,4,FR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+20,FR,4,FR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+20,FR,4,FR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+20,FR,4,FR_calf,55,RL,13,RL_calf,checked,False
+21,UNNAMED_geom_21,5,FL_hip,22,UNNAMED_geom_22,5,FL_hip,same welded body,False
+21,UNNAMED_geom_21,5,FL_hip,23,UNNAMED_geom_23,5,FL_hip,same welded body,False
+21,UNNAMED_geom_21,5,FL_hip,24,UNNAMED_geom_24,6,FL_thigh,parent/adjacent filter,False
+21,UNNAMED_geom_21,5,FL_hip,25,UNNAMED_geom_25,6,FL_thigh,parent/adjacent filter,False
+21,UNNAMED_geom_21,5,FL_hip,26,UNNAMED_geom_26,6,FL_thigh,parent/adjacent filter,False
+21,UNNAMED_geom_21,5,FL_hip,27,UNNAMED_geom_27,6,FL_thigh,parent/adjacent filter,False
+21,UNNAMED_geom_21,5,FL_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,29,UNNAMED_geom_29,7,FL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,30,UNNAMED_geom_30,7,FL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,31,FL,7,FL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,43,RR,10,RR_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+21,UNNAMED_geom_21,5,FL_hip,55,RL,13,RL_calf,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,23,UNNAMED_geom_23,5,FL_hip,same welded body,False
+22,UNNAMED_geom_22,5,FL_hip,24,UNNAMED_geom_24,6,FL_thigh,parent/adjacent filter,False
+22,UNNAMED_geom_22,5,FL_hip,25,UNNAMED_geom_25,6,FL_thigh,parent/adjacent filter,False
+22,UNNAMED_geom_22,5,FL_hip,26,UNNAMED_geom_26,6,FL_thigh,parent/adjacent filter,False
+22,UNNAMED_geom_22,5,FL_hip,27,UNNAMED_geom_27,6,FL_thigh,parent/adjacent filter,False
+22,UNNAMED_geom_22,5,FL_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,29,UNNAMED_geom_29,7,FL_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,30,UNNAMED_geom_30,7,FL_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,31,FL,7,FL_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,33,UNNAMED_geom_33,8,RR_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,34,UNNAMED_geom_34,8,RR_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,35,UNNAMED_geom_35,8,RR_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,43,RR,10,RR_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+22,UNNAMED_geom_22,5,FL_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+22,UNNAMED_geom_22,5,FL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+22,UNNAMED_geom_22,5,FL_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+22,UNNAMED_geom_22,5,FL_hip,55,RL,13,RL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,24,UNNAMED_geom_24,6,FL_thigh,parent/adjacent filter,False
+23,UNNAMED_geom_23,5,FL_hip,25,UNNAMED_geom_25,6,FL_thigh,parent/adjacent filter,False
+23,UNNAMED_geom_23,5,FL_hip,26,UNNAMED_geom_26,6,FL_thigh,parent/adjacent filter,False
+23,UNNAMED_geom_23,5,FL_hip,27,UNNAMED_geom_27,6,FL_thigh,parent/adjacent filter,False
+23,UNNAMED_geom_23,5,FL_hip,28,UNNAMED_geom_28,7,FL_calf,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,29,UNNAMED_geom_29,7,FL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,30,UNNAMED_geom_30,7,FL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,31,FL,7,FL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,33,UNNAMED_geom_33,8,RR_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,34,UNNAMED_geom_34,8,RR_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,35,UNNAMED_geom_35,8,RR_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,43,RR,10,RR_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+23,UNNAMED_geom_23,5,FL_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+23,UNNAMED_geom_23,5,FL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+23,UNNAMED_geom_23,5,FL_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+23,UNNAMED_geom_23,5,FL_hip,55,RL,13,RL_calf,checked,False
+24,UNNAMED_geom_24,6,FL_thigh,25,UNNAMED_geom_25,6,FL_thigh,same welded body,False
+24,UNNAMED_geom_24,6,FL_thigh,26,UNNAMED_geom_26,6,FL_thigh,same welded body,False
+24,UNNAMED_geom_24,6,FL_thigh,27,UNNAMED_geom_27,6,FL_thigh,same welded body,False
+24,UNNAMED_geom_24,6,FL_thigh,28,UNNAMED_geom_28,7,FL_calf,parent/adjacent filter,False
+24,UNNAMED_geom_24,6,FL_thigh,29,UNNAMED_geom_29,7,FL_calf,parent/adjacent filter,False
+24,UNNAMED_geom_24,6,FL_thigh,30,UNNAMED_geom_30,7,FL_calf,parent/adjacent filter,False
+24,UNNAMED_geom_24,6,FL_thigh,31,FL,7,FL_calf,parent/adjacent filter,False
+24,UNNAMED_geom_24,6,FL_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,43,RR,10,RR_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+24,UNNAMED_geom_24,6,FL_thigh,55,RL,13,RL_calf,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,26,UNNAMED_geom_26,6,FL_thigh,same welded body,False
+25,UNNAMED_geom_25,6,FL_thigh,27,UNNAMED_geom_27,6,FL_thigh,same welded body,False
+25,UNNAMED_geom_25,6,FL_thigh,28,UNNAMED_geom_28,7,FL_calf,parent/adjacent filter,False
+25,UNNAMED_geom_25,6,FL_thigh,29,UNNAMED_geom_29,7,FL_calf,parent/adjacent filter,False
+25,UNNAMED_geom_25,6,FL_thigh,30,UNNAMED_geom_30,7,FL_calf,parent/adjacent filter,False
+25,UNNAMED_geom_25,6,FL_thigh,31,FL,7,FL_calf,parent/adjacent filter,False
+25,UNNAMED_geom_25,6,FL_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,43,RR,10,RR_calf,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+25,UNNAMED_geom_25,6,FL_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+25,UNNAMED_geom_25,6,FL_thigh,55,RL,13,RL_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,27,UNNAMED_geom_27,6,FL_thigh,same welded body,False
+26,UNNAMED_geom_26,6,FL_thigh,28,UNNAMED_geom_28,7,FL_calf,parent/adjacent filter,False
+26,UNNAMED_geom_26,6,FL_thigh,29,UNNAMED_geom_29,7,FL_calf,parent/adjacent filter,False
+26,UNNAMED_geom_26,6,FL_thigh,30,UNNAMED_geom_30,7,FL_calf,parent/adjacent filter,False
+26,UNNAMED_geom_26,6,FL_thigh,31,FL,7,FL_calf,parent/adjacent filter,False
+26,UNNAMED_geom_26,6,FL_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,43,RR,10,RR_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+26,UNNAMED_geom_26,6,FL_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+26,UNNAMED_geom_26,6,FL_thigh,55,RL,13,RL_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,28,UNNAMED_geom_28,7,FL_calf,parent/adjacent filter,False
+27,UNNAMED_geom_27,6,FL_thigh,29,UNNAMED_geom_29,7,FL_calf,parent/adjacent filter,False
+27,UNNAMED_geom_27,6,FL_thigh,30,UNNAMED_geom_30,7,FL_calf,parent/adjacent filter,False
+27,UNNAMED_geom_27,6,FL_thigh,31,FL,7,FL_calf,parent/adjacent filter,False
+27,UNNAMED_geom_27,6,FL_thigh,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,33,UNNAMED_geom_33,8,RR_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,34,UNNAMED_geom_34,8,RR_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,35,UNNAMED_geom_35,8,RR_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,41,UNNAMED_geom_41,10,RR_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,42,UNNAMED_geom_42,10,RR_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,43,RR,10,RR_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+27,UNNAMED_geom_27,6,FL_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+27,UNNAMED_geom_27,6,FL_thigh,55,RL,13,RL_calf,checked,False
+28,UNNAMED_geom_28,7,FL_calf,29,UNNAMED_geom_29,7,FL_calf,same welded body,False
+28,UNNAMED_geom_28,7,FL_calf,30,UNNAMED_geom_30,7,FL_calf,same welded body,False
+28,UNNAMED_geom_28,7,FL_calf,31,FL,7,FL_calf,same welded body,False
+28,UNNAMED_geom_28,7,FL_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,33,UNNAMED_geom_33,8,RR_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,34,UNNAMED_geom_34,8,RR_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,35,UNNAMED_geom_35,8,RR_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,37,UNNAMED_geom_37,9,RR_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,38,UNNAMED_geom_38,9,RR_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,39,UNNAMED_geom_39,9,RR_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,43,RR,10,RR_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+28,UNNAMED_geom_28,7,FL_calf,55,RL,13,RL_calf,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,30,UNNAMED_geom_30,7,FL_calf,same welded body,False
+29,UNNAMED_geom_29,7,FL_calf,31,FL,7,FL_calf,same welded body,False
+29,UNNAMED_geom_29,7,FL_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+29,UNNAMED_geom_29,7,FL_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+29,UNNAMED_geom_29,7,FL_calf,43,RR,10,RR_calf,checked,False
+29,UNNAMED_geom_29,7,FL_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+29,UNNAMED_geom_29,7,FL_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+29,UNNAMED_geom_29,7,FL_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+29,UNNAMED_geom_29,7,FL_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+29,UNNAMED_geom_29,7,FL_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+29,UNNAMED_geom_29,7,FL_calf,55,RL,13,RL_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,31,FL,7,FL_calf,same welded body,False
+30,UNNAMED_geom_30,7,FL_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,43,RR,10,RR_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+30,UNNAMED_geom_30,7,FL_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+30,UNNAMED_geom_30,7,FL_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+30,UNNAMED_geom_30,7,FL_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+30,UNNAMED_geom_30,7,FL_calf,55,RL,13,RL_calf,checked,False
+31,FL,7,FL_calf,32,UNNAMED_geom_32,8,RR_hip,mask exclusion,False
+31,FL,7,FL_calf,33,UNNAMED_geom_33,8,RR_hip,checked,False
+31,FL,7,FL_calf,34,UNNAMED_geom_34,8,RR_hip,checked,False
+31,FL,7,FL_calf,35,UNNAMED_geom_35,8,RR_hip,checked,False
+31,FL,7,FL_calf,36,UNNAMED_geom_36,9,RR_thigh,mask exclusion,False
+31,FL,7,FL_calf,37,UNNAMED_geom_37,9,RR_thigh,checked,False
+31,FL,7,FL_calf,38,UNNAMED_geom_38,9,RR_thigh,checked,False
+31,FL,7,FL_calf,39,UNNAMED_geom_39,9,RR_thigh,checked,False
+31,FL,7,FL_calf,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+31,FL,7,FL_calf,41,UNNAMED_geom_41,10,RR_calf,checked,False
+31,FL,7,FL_calf,42,UNNAMED_geom_42,10,RR_calf,checked,False
+31,FL,7,FL_calf,43,RR,10,RR_calf,checked,False
+31,FL,7,FL_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+31,FL,7,FL_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+31,FL,7,FL_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+31,FL,7,FL_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+31,FL,7,FL_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+31,FL,7,FL_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+31,FL,7,FL_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+31,FL,7,FL_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+31,FL,7,FL_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+31,FL,7,FL_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+31,FL,7,FL_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+31,FL,7,FL_calf,55,RL,13,RL_calf,checked,False
+32,UNNAMED_geom_32,8,RR_hip,33,UNNAMED_geom_33,8,RR_hip,same welded body,False
+32,UNNAMED_geom_32,8,RR_hip,34,UNNAMED_geom_34,8,RR_hip,same welded body,False
+32,UNNAMED_geom_32,8,RR_hip,35,UNNAMED_geom_35,8,RR_hip,same welded body,False
+32,UNNAMED_geom_32,8,RR_hip,36,UNNAMED_geom_36,9,RR_thigh,parent/adjacent filter,False
+32,UNNAMED_geom_32,8,RR_hip,37,UNNAMED_geom_37,9,RR_thigh,parent/adjacent filter,False
+32,UNNAMED_geom_32,8,RR_hip,38,UNNAMED_geom_38,9,RR_thigh,parent/adjacent filter,False
+32,UNNAMED_geom_32,8,RR_hip,39,UNNAMED_geom_39,9,RR_thigh,parent/adjacent filter,False
+32,UNNAMED_geom_32,8,RR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,41,UNNAMED_geom_41,10,RR_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,42,UNNAMED_geom_42,10,RR_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,43,RR,10,RR_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+32,UNNAMED_geom_32,8,RR_hip,55,RL,13,RL_calf,mask exclusion,False
+33,UNNAMED_geom_33,8,RR_hip,34,UNNAMED_geom_34,8,RR_hip,same welded body,False
+33,UNNAMED_geom_33,8,RR_hip,35,UNNAMED_geom_35,8,RR_hip,same welded body,False
+33,UNNAMED_geom_33,8,RR_hip,36,UNNAMED_geom_36,9,RR_thigh,parent/adjacent filter,False
+33,UNNAMED_geom_33,8,RR_hip,37,UNNAMED_geom_37,9,RR_thigh,parent/adjacent filter,False
+33,UNNAMED_geom_33,8,RR_hip,38,UNNAMED_geom_38,9,RR_thigh,parent/adjacent filter,False
+33,UNNAMED_geom_33,8,RR_hip,39,UNNAMED_geom_39,9,RR_thigh,parent/adjacent filter,False
+33,UNNAMED_geom_33,8,RR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+33,UNNAMED_geom_33,8,RR_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+33,UNNAMED_geom_33,8,RR_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+33,UNNAMED_geom_33,8,RR_hip,43,RR,10,RR_calf,checked,False
+33,UNNAMED_geom_33,8,RR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+33,UNNAMED_geom_33,8,RR_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+33,UNNAMED_geom_33,8,RR_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+33,UNNAMED_geom_33,8,RR_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+33,UNNAMED_geom_33,8,RR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+33,UNNAMED_geom_33,8,RR_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+33,UNNAMED_geom_33,8,RR_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+33,UNNAMED_geom_33,8,RR_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+33,UNNAMED_geom_33,8,RR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+33,UNNAMED_geom_33,8,RR_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+33,UNNAMED_geom_33,8,RR_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+33,UNNAMED_geom_33,8,RR_hip,55,RL,13,RL_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,35,UNNAMED_geom_35,8,RR_hip,same welded body,False
+34,UNNAMED_geom_34,8,RR_hip,36,UNNAMED_geom_36,9,RR_thigh,parent/adjacent filter,False
+34,UNNAMED_geom_34,8,RR_hip,37,UNNAMED_geom_37,9,RR_thigh,parent/adjacent filter,False
+34,UNNAMED_geom_34,8,RR_hip,38,UNNAMED_geom_38,9,RR_thigh,parent/adjacent filter,False
+34,UNNAMED_geom_34,8,RR_hip,39,UNNAMED_geom_39,9,RR_thigh,parent/adjacent filter,False
+34,UNNAMED_geom_34,8,RR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+34,UNNAMED_geom_34,8,RR_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,43,RR,10,RR_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+34,UNNAMED_geom_34,8,RR_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+34,UNNAMED_geom_34,8,RR_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+34,UNNAMED_geom_34,8,RR_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+34,UNNAMED_geom_34,8,RR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+34,UNNAMED_geom_34,8,RR_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+34,UNNAMED_geom_34,8,RR_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+34,UNNAMED_geom_34,8,RR_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+34,UNNAMED_geom_34,8,RR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+34,UNNAMED_geom_34,8,RR_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+34,UNNAMED_geom_34,8,RR_hip,55,RL,13,RL_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,36,UNNAMED_geom_36,9,RR_thigh,parent/adjacent filter,False
+35,UNNAMED_geom_35,8,RR_hip,37,UNNAMED_geom_37,9,RR_thigh,parent/adjacent filter,False
+35,UNNAMED_geom_35,8,RR_hip,38,UNNAMED_geom_38,9,RR_thigh,parent/adjacent filter,False
+35,UNNAMED_geom_35,8,RR_hip,39,UNNAMED_geom_39,9,RR_thigh,parent/adjacent filter,False
+35,UNNAMED_geom_35,8,RR_hip,40,UNNAMED_geom_40,10,RR_calf,mask exclusion,False
+35,UNNAMED_geom_35,8,RR_hip,41,UNNAMED_geom_41,10,RR_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,42,UNNAMED_geom_42,10,RR_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,43,RR,10,RR_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+35,UNNAMED_geom_35,8,RR_hip,45,UNNAMED_geom_45,11,RL_hip,checked,False
+35,UNNAMED_geom_35,8,RR_hip,46,UNNAMED_geom_46,11,RL_hip,checked,False
+35,UNNAMED_geom_35,8,RR_hip,47,UNNAMED_geom_47,11,RL_hip,checked,False
+35,UNNAMED_geom_35,8,RR_hip,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+35,UNNAMED_geom_35,8,RR_hip,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+35,UNNAMED_geom_35,8,RR_hip,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+35,UNNAMED_geom_35,8,RR_hip,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+35,UNNAMED_geom_35,8,RR_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+35,UNNAMED_geom_35,8,RR_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+35,UNNAMED_geom_35,8,RR_hip,55,RL,13,RL_calf,checked,False
+36,UNNAMED_geom_36,9,RR_thigh,37,UNNAMED_geom_37,9,RR_thigh,same welded body,False
+36,UNNAMED_geom_36,9,RR_thigh,38,UNNAMED_geom_38,9,RR_thigh,same welded body,False
+36,UNNAMED_geom_36,9,RR_thigh,39,UNNAMED_geom_39,9,RR_thigh,same welded body,False
+36,UNNAMED_geom_36,9,RR_thigh,40,UNNAMED_geom_40,10,RR_calf,parent/adjacent filter,False
+36,UNNAMED_geom_36,9,RR_thigh,41,UNNAMED_geom_41,10,RR_calf,parent/adjacent filter,False
+36,UNNAMED_geom_36,9,RR_thigh,42,UNNAMED_geom_42,10,RR_calf,parent/adjacent filter,False
+36,UNNAMED_geom_36,9,RR_thigh,43,RR,10,RR_calf,parent/adjacent filter,False
+36,UNNAMED_geom_36,9,RR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+36,UNNAMED_geom_36,9,RR_thigh,55,RL,13,RL_calf,mask exclusion,False
+37,UNNAMED_geom_37,9,RR_thigh,38,UNNAMED_geom_38,9,RR_thigh,same welded body,False
+37,UNNAMED_geom_37,9,RR_thigh,39,UNNAMED_geom_39,9,RR_thigh,same welded body,False
+37,UNNAMED_geom_37,9,RR_thigh,40,UNNAMED_geom_40,10,RR_calf,parent/adjacent filter,False
+37,UNNAMED_geom_37,9,RR_thigh,41,UNNAMED_geom_41,10,RR_calf,parent/adjacent filter,False
+37,UNNAMED_geom_37,9,RR_thigh,42,UNNAMED_geom_42,10,RR_calf,parent/adjacent filter,False
+37,UNNAMED_geom_37,9,RR_thigh,43,RR,10,RR_calf,parent/adjacent filter,False
+37,UNNAMED_geom_37,9,RR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+37,UNNAMED_geom_37,9,RR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+37,UNNAMED_geom_37,9,RR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+37,UNNAMED_geom_37,9,RR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+37,UNNAMED_geom_37,9,RR_thigh,55,RL,13,RL_calf,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,39,UNNAMED_geom_39,9,RR_thigh,same welded body,False
+38,UNNAMED_geom_38,9,RR_thigh,40,UNNAMED_geom_40,10,RR_calf,parent/adjacent filter,False
+38,UNNAMED_geom_38,9,RR_thigh,41,UNNAMED_geom_41,10,RR_calf,parent/adjacent filter,False
+38,UNNAMED_geom_38,9,RR_thigh,42,UNNAMED_geom_42,10,RR_calf,parent/adjacent filter,False
+38,UNNAMED_geom_38,9,RR_thigh,43,RR,10,RR_calf,parent/adjacent filter,False
+38,UNNAMED_geom_38,9,RR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+38,UNNAMED_geom_38,9,RR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+38,UNNAMED_geom_38,9,RR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+38,UNNAMED_geom_38,9,RR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+38,UNNAMED_geom_38,9,RR_thigh,55,RL,13,RL_calf,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,40,UNNAMED_geom_40,10,RR_calf,parent/adjacent filter,False
+39,UNNAMED_geom_39,9,RR_thigh,41,UNNAMED_geom_41,10,RR_calf,parent/adjacent filter,False
+39,UNNAMED_geom_39,9,RR_thigh,42,UNNAMED_geom_42,10,RR_calf,parent/adjacent filter,False
+39,UNNAMED_geom_39,9,RR_thigh,43,RR,10,RR_calf,parent/adjacent filter,False
+39,UNNAMED_geom_39,9,RR_thigh,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+39,UNNAMED_geom_39,9,RR_thigh,45,UNNAMED_geom_45,11,RL_hip,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,46,UNNAMED_geom_46,11,RL_hip,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,47,UNNAMED_geom_47,11,RL_hip,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+39,UNNAMED_geom_39,9,RR_thigh,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+39,UNNAMED_geom_39,9,RR_thigh,53,UNNAMED_geom_53,13,RL_calf,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,54,UNNAMED_geom_54,13,RL_calf,checked,False
+39,UNNAMED_geom_39,9,RR_thigh,55,RL,13,RL_calf,checked,False
+40,UNNAMED_geom_40,10,RR_calf,41,UNNAMED_geom_41,10,RR_calf,same welded body,False
+40,UNNAMED_geom_40,10,RR_calf,42,UNNAMED_geom_42,10,RR_calf,same welded body,False
+40,UNNAMED_geom_40,10,RR_calf,43,RR,10,RR_calf,same welded body,False
+40,UNNAMED_geom_40,10,RR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,45,UNNAMED_geom_45,11,RL_hip,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,46,UNNAMED_geom_46,11,RL_hip,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,47,UNNAMED_geom_47,11,RL_hip,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,49,UNNAMED_geom_49,12,RL_thigh,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,50,UNNAMED_geom_50,12,RL_thigh,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,51,UNNAMED_geom_51,12,RL_thigh,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+40,UNNAMED_geom_40,10,RR_calf,55,RL,13,RL_calf,mask exclusion,False
+41,UNNAMED_geom_41,10,RR_calf,42,UNNAMED_geom_42,10,RR_calf,same welded body,False
+41,UNNAMED_geom_41,10,RR_calf,43,RR,10,RR_calf,same welded body,False
+41,UNNAMED_geom_41,10,RR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+41,UNNAMED_geom_41,10,RR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+41,UNNAMED_geom_41,10,RR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+41,UNNAMED_geom_41,10,RR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+41,UNNAMED_geom_41,10,RR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+41,UNNAMED_geom_41,10,RR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+41,UNNAMED_geom_41,10,RR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+41,UNNAMED_geom_41,10,RR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+41,UNNAMED_geom_41,10,RR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+41,UNNAMED_geom_41,10,RR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+41,UNNAMED_geom_41,10,RR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+41,UNNAMED_geom_41,10,RR_calf,55,RL,13,RL_calf,checked,False
+42,UNNAMED_geom_42,10,RR_calf,43,RR,10,RR_calf,same welded body,False
+42,UNNAMED_geom_42,10,RR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+42,UNNAMED_geom_42,10,RR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+42,UNNAMED_geom_42,10,RR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+42,UNNAMED_geom_42,10,RR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+42,UNNAMED_geom_42,10,RR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+42,UNNAMED_geom_42,10,RR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+42,UNNAMED_geom_42,10,RR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+42,UNNAMED_geom_42,10,RR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+42,UNNAMED_geom_42,10,RR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+42,UNNAMED_geom_42,10,RR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+42,UNNAMED_geom_42,10,RR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+42,UNNAMED_geom_42,10,RR_calf,55,RL,13,RL_calf,checked,False
+43,RR,10,RR_calf,44,UNNAMED_geom_44,11,RL_hip,mask exclusion,False
+43,RR,10,RR_calf,45,UNNAMED_geom_45,11,RL_hip,checked,False
+43,RR,10,RR_calf,46,UNNAMED_geom_46,11,RL_hip,checked,False
+43,RR,10,RR_calf,47,UNNAMED_geom_47,11,RL_hip,checked,False
+43,RR,10,RR_calf,48,UNNAMED_geom_48,12,RL_thigh,mask exclusion,False
+43,RR,10,RR_calf,49,UNNAMED_geom_49,12,RL_thigh,checked,False
+43,RR,10,RR_calf,50,UNNAMED_geom_50,12,RL_thigh,checked,False
+43,RR,10,RR_calf,51,UNNAMED_geom_51,12,RL_thigh,checked,False
+43,RR,10,RR_calf,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+43,RR,10,RR_calf,53,UNNAMED_geom_53,13,RL_calf,checked,False
+43,RR,10,RR_calf,54,UNNAMED_geom_54,13,RL_calf,checked,False
+43,RR,10,RR_calf,55,RL,13,RL_calf,checked,False
+44,UNNAMED_geom_44,11,RL_hip,45,UNNAMED_geom_45,11,RL_hip,same welded body,False
+44,UNNAMED_geom_44,11,RL_hip,46,UNNAMED_geom_46,11,RL_hip,same welded body,False
+44,UNNAMED_geom_44,11,RL_hip,47,UNNAMED_geom_47,11,RL_hip,same welded body,False
+44,UNNAMED_geom_44,11,RL_hip,48,UNNAMED_geom_48,12,RL_thigh,parent/adjacent filter,False
+44,UNNAMED_geom_44,11,RL_hip,49,UNNAMED_geom_49,12,RL_thigh,parent/adjacent filter,False
+44,UNNAMED_geom_44,11,RL_hip,50,UNNAMED_geom_50,12,RL_thigh,parent/adjacent filter,False
+44,UNNAMED_geom_44,11,RL_hip,51,UNNAMED_geom_51,12,RL_thigh,parent/adjacent filter,False
+44,UNNAMED_geom_44,11,RL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+44,UNNAMED_geom_44,11,RL_hip,53,UNNAMED_geom_53,13,RL_calf,mask exclusion,False
+44,UNNAMED_geom_44,11,RL_hip,54,UNNAMED_geom_54,13,RL_calf,mask exclusion,False
+44,UNNAMED_geom_44,11,RL_hip,55,RL,13,RL_calf,mask exclusion,False
+45,UNNAMED_geom_45,11,RL_hip,46,UNNAMED_geom_46,11,RL_hip,same welded body,False
+45,UNNAMED_geom_45,11,RL_hip,47,UNNAMED_geom_47,11,RL_hip,same welded body,False
+45,UNNAMED_geom_45,11,RL_hip,48,UNNAMED_geom_48,12,RL_thigh,parent/adjacent filter,False
+45,UNNAMED_geom_45,11,RL_hip,49,UNNAMED_geom_49,12,RL_thigh,parent/adjacent filter,False
+45,UNNAMED_geom_45,11,RL_hip,50,UNNAMED_geom_50,12,RL_thigh,parent/adjacent filter,False
+45,UNNAMED_geom_45,11,RL_hip,51,UNNAMED_geom_51,12,RL_thigh,parent/adjacent filter,False
+45,UNNAMED_geom_45,11,RL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+45,UNNAMED_geom_45,11,RL_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+45,UNNAMED_geom_45,11,RL_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+45,UNNAMED_geom_45,11,RL_hip,55,RL,13,RL_calf,checked,False
+46,UNNAMED_geom_46,11,RL_hip,47,UNNAMED_geom_47,11,RL_hip,same welded body,False
+46,UNNAMED_geom_46,11,RL_hip,48,UNNAMED_geom_48,12,RL_thigh,parent/adjacent filter,False
+46,UNNAMED_geom_46,11,RL_hip,49,UNNAMED_geom_49,12,RL_thigh,parent/adjacent filter,False
+46,UNNAMED_geom_46,11,RL_hip,50,UNNAMED_geom_50,12,RL_thigh,parent/adjacent filter,False
+46,UNNAMED_geom_46,11,RL_hip,51,UNNAMED_geom_51,12,RL_thigh,parent/adjacent filter,False
+46,UNNAMED_geom_46,11,RL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+46,UNNAMED_geom_46,11,RL_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+46,UNNAMED_geom_46,11,RL_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+46,UNNAMED_geom_46,11,RL_hip,55,RL,13,RL_calf,checked,False
+47,UNNAMED_geom_47,11,RL_hip,48,UNNAMED_geom_48,12,RL_thigh,parent/adjacent filter,False
+47,UNNAMED_geom_47,11,RL_hip,49,UNNAMED_geom_49,12,RL_thigh,parent/adjacent filter,False
+47,UNNAMED_geom_47,11,RL_hip,50,UNNAMED_geom_50,12,RL_thigh,parent/adjacent filter,False
+47,UNNAMED_geom_47,11,RL_hip,51,UNNAMED_geom_51,12,RL_thigh,parent/adjacent filter,False
+47,UNNAMED_geom_47,11,RL_hip,52,UNNAMED_geom_52,13,RL_calf,mask exclusion,False
+47,UNNAMED_geom_47,11,RL_hip,53,UNNAMED_geom_53,13,RL_calf,checked,False
+47,UNNAMED_geom_47,11,RL_hip,54,UNNAMED_geom_54,13,RL_calf,checked,False
+47,UNNAMED_geom_47,11,RL_hip,55,RL,13,RL_calf,checked,False
+48,UNNAMED_geom_48,12,RL_thigh,49,UNNAMED_geom_49,12,RL_thigh,same welded body,False
+48,UNNAMED_geom_48,12,RL_thigh,50,UNNAMED_geom_50,12,RL_thigh,same welded body,False
+48,UNNAMED_geom_48,12,RL_thigh,51,UNNAMED_geom_51,12,RL_thigh,same welded body,False
+48,UNNAMED_geom_48,12,RL_thigh,52,UNNAMED_geom_52,13,RL_calf,parent/adjacent filter,False
+48,UNNAMED_geom_48,12,RL_thigh,53,UNNAMED_geom_53,13,RL_calf,parent/adjacent filter,False
+48,UNNAMED_geom_48,12,RL_thigh,54,UNNAMED_geom_54,13,RL_calf,parent/adjacent filter,False
+48,UNNAMED_geom_48,12,RL_thigh,55,RL,13,RL_calf,parent/adjacent filter,False
+49,UNNAMED_geom_49,12,RL_thigh,50,UNNAMED_geom_50,12,RL_thigh,same welded body,False
+49,UNNAMED_geom_49,12,RL_thigh,51,UNNAMED_geom_51,12,RL_thigh,same welded body,False
+49,UNNAMED_geom_49,12,RL_thigh,52,UNNAMED_geom_52,13,RL_calf,parent/adjacent filter,False
+49,UNNAMED_geom_49,12,RL_thigh,53,UNNAMED_geom_53,13,RL_calf,parent/adjacent filter,False
+49,UNNAMED_geom_49,12,RL_thigh,54,UNNAMED_geom_54,13,RL_calf,parent/adjacent filter,False
+49,UNNAMED_geom_49,12,RL_thigh,55,RL,13,RL_calf,parent/adjacent filter,False
+50,UNNAMED_geom_50,12,RL_thigh,51,UNNAMED_geom_51,12,RL_thigh,same welded body,False
+50,UNNAMED_geom_50,12,RL_thigh,52,UNNAMED_geom_52,13,RL_calf,parent/adjacent filter,False
+50,UNNAMED_geom_50,12,RL_thigh,53,UNNAMED_geom_53,13,RL_calf,parent/adjacent filter,False
+50,UNNAMED_geom_50,12,RL_thigh,54,UNNAMED_geom_54,13,RL_calf,parent/adjacent filter,False
+50,UNNAMED_geom_50,12,RL_thigh,55,RL,13,RL_calf,parent/adjacent filter,False
+51,UNNAMED_geom_51,12,RL_thigh,52,UNNAMED_geom_52,13,RL_calf,parent/adjacent filter,False
+51,UNNAMED_geom_51,12,RL_thigh,53,UNNAMED_geom_53,13,RL_calf,parent/adjacent filter,False
+51,UNNAMED_geom_51,12,RL_thigh,54,UNNAMED_geom_54,13,RL_calf,parent/adjacent filter,False
+51,UNNAMED_geom_51,12,RL_thigh,55,RL,13,RL_calf,parent/adjacent filter,False
+52,UNNAMED_geom_52,13,RL_calf,53,UNNAMED_geom_53,13,RL_calf,same welded body,False
+52,UNNAMED_geom_52,13,RL_calf,54,UNNAMED_geom_54,13,RL_calf,same welded body,False
+52,UNNAMED_geom_52,13,RL_calf,55,RL,13,RL_calf,same welded body,False
+53,UNNAMED_geom_53,13,RL_calf,54,UNNAMED_geom_54,13,RL_calf,same welded body,False
+53,UNNAMED_geom_53,13,RL_calf,55,RL,13,RL_calf,same welded body,False
+54,UNNAMED_geom_54,13,RL_calf,55,RL,13,RL_calf,same welded body,False

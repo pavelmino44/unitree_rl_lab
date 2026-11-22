@@ -1,6 +1,6 @@
 """Flat-only Go1 PPO task for Hackathon T3 (Isaac Lab 2.3 / Isaac Sim 5.x).
-This environment models a simplified T2 joint target clamp/rate limit, not the
-collision-aware Safety Block. The Go1 USD matches the MJCF mass/inertias/geometry;
+Default PPO batches T2 joint/step/torque checks on GPU; optional MuJoCo mode also
+checks collision sweeps. The Go1 USD matches the MJCF mass/inertias/geometry;
 solver behavior still requires MuJoCo sim-to-sim validation before submission.
 """
 
@@ -47,21 +47,19 @@ from unitree_rl_lab.tasks.locomotion.robots.go2.velocity_env_cfg import (
 from .actions import RateLimitedJointPositionActionCfg
 from .commands import Go1VelocityCommandCfg
 from .physics import validate_go1_mjcf_physics
+from .safety_reference.joint_limits import Q_MAX, Q_MIN, STEP_LIMIT_RAD
 from .stability import base_too_low
 from .terrain import Go1TerrainImporter
 
 # SDK/T2 joint order: FR, FL, RR, RL; hip, thigh, calf per leg.
 assert len(GO1_SDK_JOINTS) == 12
-# Scale Go2's linear command schedule (vx limit 1.0 m/s) to T3's 0.6 m/s.
-GO1_MAX_SPEED = 0.6
-GO1_LINEAR_SPEED_SCALE = GO1_MAX_SPEED / 1.0
-# Use stricter margins than the T2 contractual limits. This is not a
-# guarantee of collision freedom: only the full Safety Block can give that.
-# Keep right hips slightly abducted (negative) and left hips slightly
-# abducted (positive). This prevents splaying/crossing
-# exploits. Self-collisions are now enabled with MJCF-compatible body filters.
-JOINT_MIN = (-0.32, 0.05, -2.60, +0.03, 0.05, -2.60) * 2
-JOINT_MAX = (-0.03, 2.25, -1.00, +0.32, 2.25, -1.00) * 2
+# Preserve the v3/Go2 curriculum start, increment and success conditions.
+# Extend only the longitudinal cap for training headroom; official T3 is <=0.6.
+GO1_JUDGE_MAX_SPEED = 0.6
+GO1_MAX_SPEED = 0.7
+GO1_LINEAR_SPEED_SCALE = GO1_JUDGE_MAX_SPEED / 1.0
+JOINT_MIN = tuple(Q_MIN)
+JOINT_MAX = tuple(Q_MAX)
 
 
 @configclass
@@ -135,11 +133,13 @@ class Go1ActionsCfg:
             ".*_calf_joint": 0.35,
         },
         use_default_offset=True,
-        clip=None,  # Raw actions are clipped before affine scaling by our action term.
-        raw_action_clip=1.0,
-        max_delta_rad=math.radians(4.5),
+        clip=None,
+        raw_action_clip=math.inf,  # No extra +/-1 envelope before affine scaling.
+        max_delta_rad=STEP_LIMIT_RAD,
         min_target=JOINT_MIN,
         max_target=JOINT_MAX,
+        check_torques=True,
+        collision_check="none",  # Full CPU reference sweep is enabled by evaluation.
     )
 
 
@@ -191,7 +191,7 @@ class Go1RewardsCfg(Go2RewardsCfg):
 
 @configclass
 class Go1CurriculumCfg(Go2CurriculumCfg):
-    """Use Go2 conditions with an increment scaled to Go1's maximum speed."""
+    """Keep Go2 conditions and the v3 nominal 0.06 m/s increment."""
 
     terrain_levels: CurrTerm | None = None
     lin_vel_cmd_levels = CurrTerm(

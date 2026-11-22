@@ -22,6 +22,7 @@ class Go1VelocityCommand(UniformVelocityCommand):
 
     def __init__(self, cfg, env):
         super().__init__(cfg, env)
+        self._go1_env = env
         self._metric_steps = torch.zeros(self.num_envs, device=self.device)
         for name in (
             "velocity_x",
@@ -30,6 +31,9 @@ class Go1VelocityCommand(UniformVelocityCommand):
             "command_angular_velocity_z",
         ):
             self.metrics[name] = torch.zeros(self.num_envs, device=self.device)
+        for name in ("bound_clip", "step_clip", "nonfinite_reject", "torque_reject",
+                     "collision_reject", "accepted", "exact_collision_check"):
+            self.metrics["safety_" + name] = torch.zeros(self.num_envs, device=self.device)
 
     def _update_metrics(self):
         self._metric_steps += 1
@@ -46,6 +50,11 @@ class Go1VelocityCommand(UniformVelocityCommand):
             "angular_velocity_z": self.robot.data.root_ang_vel_b[:, 2],
             "command_angular_velocity_z": self.command[:, 2],
         }
+        manager = getattr(self._go1_env, "action_manager", None)
+        if manager is not None:
+            term = manager.get_term("JointPositionAction")
+            for name, value in term.safety_metrics.items():
+                samples["safety_" + name] = value
         for name, sample in samples.items():
             self.metrics[name] += (sample - self.metrics[name]) / self._metric_steps
 

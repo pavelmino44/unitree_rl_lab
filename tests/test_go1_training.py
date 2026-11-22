@@ -112,7 +112,7 @@ def load_config_contracts():
                 isinstance(node, ast.Assign)
                 and any(
                     isinstance(target, ast.Name)
-                    and target.id in {"GO1_MAX_SPEED", "GO1_LINEAR_SPEED_SCALE"}
+                    and target.id in {"GO1_MAX_SPEED", "GO1_JUDGE_MAX_SPEED", "GO1_LINEAR_SPEED_SCALE"}
                     for target in node.targets
                 )
             )
@@ -159,20 +159,22 @@ class ConfigTests(unittest.TestCase):
             ["trunk", ".*_hip", ".*_thigh", ".*_calf"],
         )
 
-    def test_linear_commands_scale_with_maximum_speed(self):
+    def test_nominal_go2_schedule_is_preserved_with_longitudinal_headroom(self):
         go1, go2 = (
             self.cfg.Go1CommandsCfg().base_velocity,
             self.cfg.CommandsCfg().base_velocity,
         )
-        scale = self.cfg.GO1_MAX_SPEED / go2.limit_ranges.lin_vel_x[1]
+        scale = self.cfg.GO1_JUDGE_MAX_SPEED / go2.limit_ranges.lin_vel_x[1]
         for ranges_name in ("ranges", "limit_ranges"):
             for axis in ("lin_vel_x", "lin_vel_y"):
+                if ranges_name == "limit_ranges" and axis == "lin_vel_x":
+                    continue
                 expected = [v * scale for v in getattr(getattr(go2, ranges_name), axis)]
                 self.assertEqual(
                     list(getattr(getattr(go1, ranges_name), axis)), expected
                 )
         self.assertEqual(go1.ranges.lin_vel_x, (-0.06, 0.06))
-        self.assertEqual(go1.limit_ranges.lin_vel_x, (-0.6, 0.6))
+        self.assertEqual(go1.limit_ranges.lin_vel_x, (-0.7, 0.7))
         self.assertEqual(go1.ranges.ang_vel_z, (-1.0, 1.0))
         self.assertEqual(go1.rel_standing_envs, 0.1)
         self.assertTrue(go1.debug_vis)
@@ -238,19 +240,20 @@ class ConfigTests(unittest.TestCase):
             ),
         )
         term = self.cfg.Go1CurriculumCfg().lin_vel_cmd_levels
-        for _ in range(15):
+        for level in range(15):
             env.command_manager = NS(get_term=lambda _: NS(cfg=go1))
             term.func(env, [0, 1, 2, 3], **term.params)
             env.command_manager = NS(get_term=lambda _: NS(cfg=go2))
             self.shared.lin_vel_cmd_levels(env, [0, 1, 2, 3])  # unmodified Go2 default
-            self.assertAlmostEqual(
-                go1.ranges.lin_vel_x[1] / 0.6, go2.ranges.lin_vel_x[1], places=5
-            )
+            if level < 9:
+                self.assertAlmostEqual(
+                    go1.ranges.lin_vel_x[1] / 0.6, go2.ranges.lin_vel_x[1], places=5
+                )
             self.assertAlmostEqual(
                 go1.ranges.lin_vel_y[1] / 0.6, go2.ranges.lin_vel_y[1], places=5
             )
-            self.assertLessEqual(go1.ranges.lin_vel_x[1], 0.6 + 1e-7)
-        self.assertAlmostEqual(go1.ranges.lin_vel_x[1], 0.6, places=6)
+            self.assertLessEqual(go1.ranges.lin_vel_x[1], 0.7 + 1e-7)
+        self.assertAlmostEqual(go1.ranges.lin_vel_x[1], 0.7, places=6)
         self.assertAlmostEqual(go2.ranges.lin_vel_x[1], 1.0, places=6)
 
     def test_height_threshold_boundary(self):
@@ -381,6 +384,15 @@ class CommandTests(unittest.TestCase):
         # Rotate local +X by the computed quaternion: negative yaw points down.
         axial_z = -2 * quat[:, 0] * quat[:, 2]
         torch.testing.assert_close(axial_z, torch.tensor([-1.0, 1.0, 1.0]))
+
+    def test_safety_metrics_are_episode_means(self):
+        metrics = {"torque_reject": torch.tensor([1., 0.]),
+                   "exact_collision_check": torch.tensor([0., 0.])}
+        self.env.action_manager = NS(get_term=lambda _: NS(safety_metrics=metrics))
+        self.term._update_metrics()
+        metrics["torque_reject"].zero_()
+        self.term._update_metrics()
+        torch.testing.assert_close(self.term.metrics["safety_torque_reject"], torch.tensor([.5, 0.]))
 
     def test_both_marker_pairs_update_and_visibility_toggles(self):
         self.term.command[:, 2] = 1.0

@@ -13,6 +13,7 @@ class Go1FlatPPORunnerCfg(BasePPORunnerCfg):
     max_iterations = 15000
     save_interval = 200
     empirical_normalization = False
+    clip_actions = None  # Physical target limits live in the Go1 action term.
     policy = RslRlPpoActorCriticCfg(
         init_noise_std=0.6,
         actor_obs_normalization=True,

@@ -16,6 +16,7 @@ import argparse
 import csv
 import json
 import math
+import traceback
 from pathlib import Path
 
 from isaaclab.app import AppLauncher
@@ -25,6 +26,8 @@ parser.add_argument("--checkpoint", type=str, required=True)
 parser.add_argument("--episodes", type=int, default=10)
 parser.add_argument("--speed", type=float, default=0.3)
 parser.add_argument("--output", type=str, default="logs/go1_t3_eval.csv")
+parser.add_argument("--collision-check", choices=("mujoco", "none"), default="mujoco",
+                    help="Exact T2 CPU collision sweeps (default), or faster approximate evaluation")
 AppLauncher.add_app_launcher_args(parser)
 args = parser.parse_args()
 if args.episodes < 1:
@@ -44,6 +47,7 @@ from unitree_rl_lab.tasks.locomotion.robots.go1.agents import Go1FlatPPORunnerCf
 from unitree_rl_lab.tasks.locomotion.robots.go1.velocity_env_cfg import Go1FlatPlayEnvCfg
 
 
+@torch.inference_mode()
 def main():
     cfg = Go1FlatPlayEnvCfg()
     cfg.seed = 42
@@ -52,6 +56,7 @@ def main():
     cfg.terminations.bad_orientation = None
     cfg.terminations.base_contact = None
     cfg.terminations.base_too_low = None
+    cfg.actions.JointPositionAction.collision_check = args.collision_check
     # T3: constant forward Twist, no lateral command and no turning.
     for ranges in (cfg.commands.base_velocity.ranges, cfg.commands.base_velocity.limit_ranges):
         ranges.lin_vel_x = (args.speed, args.speed)
@@ -65,6 +70,7 @@ def main():
     runner.load(str(Path(args.checkpoint).expanduser().resolve()))
     policy = runner.get_inference_policy(device=env.unwrapped.device)
     robot = env.unwrapped.scene["robot"]
+    action_term = env.unwrapped.action_manager.get_term("JointPositionAction")
     step_dt = float(env.unwrapped.step_dt)
     warmup_steps = math.ceil(1.5 / step_dt)
     movement_steps = math.ceil(90.0 / step_dt)
@@ -83,6 +89,8 @@ def main():
         forward = 0.0
         lateral = 0.0
         scored_s = 0.0
+        safety_sums = {name: 0.0 for name in action_term.safety_metrics}
+        safety_samples = 0
         with torch.inference_mode():
             for step in range(warmup_steps + movement_steps):
                 obs, _, done, _ = env.step(policy(obs))
@@ -95,6 +103,9 @@ def main():
                     continue
                 if step < warmup_steps:
                     continue
+                safety_samples += 1
+                for name, value in action_term.safety_metrics.items():
+                    safety_sums[name] += float(value[0])
                 scored_s = (step - warmup_steps + 1) * step_dt
                 dxy = pos[:2] - start_xy
                 forward = float(torch.dot(dxy, heading).item())
@@ -119,6 +130,10 @@ def main():
             "scored_time_s": round(scored_s, 3),
             "fell": int(fell),
             "speed_cmd_mps": args.speed,
+            "mean_forward_mps": round(forward / max(scored_s, step_dt), 5),
+            "collision_check": args.collision_check,
+            **{"safety_" + name: round(value / max(safety_samples, 1), 6)
+               for name, value in safety_sums.items()},
         }
         print(json.dumps(record))
         records.append(record)
@@ -131,12 +146,17 @@ def main():
         writer.writerows(records)
     success_count = sum(record["success"] for record in records)
     print(f"Local Isaac Lab success: {success_count}/{len(records)}. CSV: {output}")
-    print("Not equivalent to the T3 MuJoCo Judge, including collision-aware Safety filtering.")
+    print("Joint target filtering mode:", args.collision_check)
+    print("Not equivalent to the T3 MuJoCo Judge: Isaac physics and episode resets differ.")
     env.close()
 
 
 if __name__ == "__main__":
     try:
         main()
+    except BaseException:
+        # Print before Isaac closes: some versions exit while closing the app.
+        traceback.print_exc()
+        raise
     finally:
         app.close()

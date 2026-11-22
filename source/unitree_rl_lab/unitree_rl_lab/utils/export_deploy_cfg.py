@@ -113,5 +113,11 @@ def export_deploy_cfg(env: ManagerBasedRLEnv, log_dir):
     if not isinstance(cfg, dict):
         cfg = class_to_dict(cfg)
     cfg = format_value(cfg)
+    # Go1's contractual joint/step limits must not be rounded to 3 digits:
+    # e.g. 5 degrees -> 0.0873 rad would exceed the T2 per-command cap.
+    # Existing action terms (including Go2) do not provide this optional hook.
+    for action_name, action_term in env.action_manager._terms.items():
+        if hasattr(action_term, "export_safety_config"):
+            cfg["actions"][action_name].update(action_term.export_safety_config())
     with open(filename, "w") as f:
         yaml.dump(cfg, f, default_flow_style=None, sort_keys=False)
